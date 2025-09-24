@@ -10,7 +10,7 @@ import java.io.*;
 public class LibraryManager {
 
     /** The object doing all the actual work. */
-    private Library _library = new Library(_defaultRules);
+    private Library _library = new Library(/**_defaultRules*/);
 
     //FIXME maybe define constructors
 
