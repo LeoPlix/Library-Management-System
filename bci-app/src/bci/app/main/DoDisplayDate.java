@@ -16,7 +16,8 @@ class DoDisplayDate extends Command<LibraryManager> {
 
     @Override
     protected final void execute() {
-        //FIXME implement command
+        int currentDate = _receiver.getLibrary().getCurrentDate();
+        _display.addLine(Message.currentDate(currentDate));
     }
 
 }
