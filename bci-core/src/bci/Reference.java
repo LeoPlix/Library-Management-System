@@ -1,0 +1,63 @@
+package bci;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * Reference category implementation.
+ */
+public class Reference implements Category, Serializable {
+    
+    @java.io.Serial
+    private static final long serialVersionUID = 202507171003L;
+    
+    private List<Work> _works;
+    private String _name;
+    
+    /**
+     * Constructor for Reference category.
+     */
+    public Reference() {
+        _name = "Reference";
+        _works = new ArrayList<>();
+    }
+    
+    @Override
+    public List<Work> category(String name) {
+        if ("Reference".equals(name)) {
+            return new ArrayList<>(_works);
+        }
+        return new ArrayList<>();
+    }
+    
+    @Override
+    public List<Work> addWork(Work work) {
+        if (work != null && !_works.contains(work)) {
+            _works.add(work);
+        }
+        return new ArrayList<>(_works);
+    }
+    
+    @Override
+    public List<Work> removeWork(Work work) {
+        _works.remove(work);
+        return new ArrayList<>(_works);
+    }
+    
+    /**
+     * Gets the category name.
+     * @return the category name
+     */
+    public String getName() {
+        return _name;
+    }
+    
+    /**
+     * Gets all works in this category.
+     * @return list of all works
+     */
+    public List<Work> getWorks() {
+        return new ArrayList<>(_works);
+    }
+}

@@ -17,6 +17,7 @@ public class Library implements Serializable {
     private boolean _changed = false;
     private int _currentDate = 0;
     private Map<Integer, User> _users = new HashMap<>();
+    private Map<Integer, Work> _works = new HashMap<>();
 
     @java.io.Serial
     private static final long serialVersionUID = 202507171003L;
@@ -72,4 +73,30 @@ public class Library implements Serializable {
             .map(User::toString)
             .collect(Collectors.toList());
     }
+
+
+    public int getCurrentWorkID() {
+        return _users.size() + 1;
+    }
+
+    public Work getWork(int WorkId) {
+        return _works.get(WorkId);
+    }
+    
+    /**
+     * Changes the inventory of a work by the specified amount.
+     * @param workId the work identifier
+     * @param amount the amount to change (positive to add, negative to remove)
+     * @return true if successful, false if work doesn't exist or not enough inventory
+     */
+    public void changeWorkInventory(int workId, int amount) {
+        Work work = _works.get(workId);
+        if (work != null) {
+            work.changeInventory(amount);
+        if (amount>0) {
+            setChanged(true);
+        }
+        }
+    }
+
 }

@@ -14,7 +14,7 @@ public class Creator implements Serializable {
     
     // Attributes from UML
     private String _name;
-    private List<Object> _works; // TODO: Change to List<Work> when Work class is created
+    private List<Work> _works;
     
     /**
      * Constructor for Creator.
@@ -37,7 +37,7 @@ public class Creator implements Serializable {
      * Gets the list of works by this creator.
      * @return the list of works
      */
-    public List<Object> getWorks() { // TODO: Change to List<Work> when Work class is created
+    public List<Work> getWorks() { 
         return _works;
     }
     
@@ -45,7 +45,7 @@ public class Creator implements Serializable {
      * Adds a work to this creator's collection.
      * @param work the work to add
      */
-    public void addWork(Object work) { // TODO: Change to Work when Work class is created
+    public void addWork(Work work) { 
         if (work != null && !_works.contains(work)) {
             _works.add(work);
         }
@@ -55,7 +55,7 @@ public class Creator implements Serializable {
      * Removes a work from this creator's collection.
      * @param work the work to remove
      */
-    public void removeWork(Object work) { // TODO: Change to Work when Work class is created
+    public void removeWork(Work work) {
         _works.remove(work);
     }
     
@@ -80,8 +80,4 @@ public class Creator implements Serializable {
         return _name != null ? _name.equals(creator._name) : creator._name == null;
     }
     
-    @Override
-    public int hashCode() {
-        return _name != null ? _name.hashCode() : 0;
-    }
 }
