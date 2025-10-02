@@ -30,4 +30,3 @@ class Library implements Serializable {
     }
 
 }
-
