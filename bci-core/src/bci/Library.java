@@ -1,24 +1,23 @@
 package bci;
 
 import bci.exceptions.*;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
-//FIXME maybe import classes
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 /** Class that represents the library as a whole. */
 public class Library implements Serializable {
     private boolean _changed = false;
     private int _currentDate = 0;
+    private Map<Integer, User> _users = new HashMap<>();
 
     @java.io.Serial
     private static final long serialVersionUID = 202507171003L;
-
-    //FIXME maybe define attributes
-    //FIXME maybe implement constructor
-    //FIXME maybe implement methods
 
     /**
      * Read the text input file at the beginning of the program and populates the
@@ -33,8 +32,7 @@ public class Library implements Serializable {
       //try (BufferedReader reader = new BufferedReader(new FileReader(filename)))
     }
 
-    
-/** 
+    /** 
      * Set Library to changed. 
      */
     public void changed() {
@@ -74,5 +72,42 @@ public class Library implements Serializable {
         }
     }
 
+    public int getCurrentUserID() {
+        return _users.size() + 1;
+    }
+
+    /**
+     * Registers a new user in the library.
+     * @param id user identifier
+     * @param name user name
+     * @param email user email
+     */
+    public void registerUser(String name, String email) {
+        int id = getCurrentUserID();
+        if (_users.containsKey(id)) {
+            // User already exists
+            return;
+        }
+        User user = new User(id, name, email);
+        _users.put(id, user);
+        setChanged(true);
+    }
+
+    /**
+     * Gets a user by ID.
+     * @param userId user identifier
+     * @return the user or null if not found
+     */
+    public User getUser(int userId) {
+        return _users.get(userId);
+    }
+
+    /**
+     * Gets all users.
+     * @return list of all users
+     */
+    public List<User> getAllUsers() {
+        return new ArrayList<>(_users.values());
+    }
 
 }
