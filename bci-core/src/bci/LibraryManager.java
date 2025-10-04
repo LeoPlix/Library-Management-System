@@ -33,12 +33,13 @@ public class LibraryManager {
 
   public void load(String filename) throws UnavailableFileException {
     try {
-      ObjectInputStream ois = new ObjectInputStream(
-                              new BufferedInputStream(  
-                              new FileInputStream(filename)));
-      _filename = filename;
-      _library = (Library)ois.readObject();
-      _library.setChanged(false);
+      try (ObjectInputStream ois = new ObjectInputStream(
+                                   new BufferedInputStream(  
+                                   new FileInputStream(filename)))) {
+        _filename = filename;
+        _library = (Library)ois.readObject();
+        _library.setChanged(false);
+      }
     }
     catch (IOException | ClassNotFoundException e) {
       throw new UnavailableFileException(filename);
