@@ -82,12 +82,22 @@ public class Book extends Work {
     }
     
     @Override
-    public String toString() {
+    protected String getWorkType() {
+        return "Livro";
+    }
+    
+    @Override
+    protected String getAdditionalInfo() {
         StringBuilder authors = new StringBuilder();
         for (int i = 0; i < _author.size(); i++) {
-            if (i > 0) authors.append(", ");
+            if (i > 0) authors.append("; ");
             authors.append(_author.get(i).getName());
         }
-        return super.toString() + " - ISBN: " + _isbn + " - Authors: " + authors.toString();
+        return " - " + authors.toString() + " - " + _isbn;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

@@ -15,13 +15,12 @@ class DoDisplayWork extends Command<LibraryManager> {
 
     @Override
     protected final void execute() throws CommandException {
-        int workId = integerField("workId");
-        Work work = _receiver.getLibrary().getWork(workId);
-
-        if (work == null) {
-            throw new NoSuchWorkException(workId);
+        try {
+            int workId = integerField("workId");
+            Work work = _receiver.getLibrary().workByKey(workId);
+            _display.popup(work.toString());
+        } catch (bci.exceptions.NoSuchWorkException e) {
+            throw new NoSuchWorkException(integerField("workId"));
         }
-
-        _display.popup(work.toString());
     }
 }

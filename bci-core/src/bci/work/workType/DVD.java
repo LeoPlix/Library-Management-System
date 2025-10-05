@@ -53,8 +53,18 @@ public class DVD extends Work {
     }
     
     @Override
-    public String toString() {
+    protected String getWorkType() {
+        return "DVD";
+    }
+    
+    @Override
+    protected String getAdditionalInfo() {
         String directorName = _director != null ? _director.getName() : "Unknown";
-        return super.toString() + " - IGAC: " + _igac + " - Director: " + directorName;
+        return " - " + directorName + " - " + _igac;
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString();
     }
 }

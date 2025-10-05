@@ -28,4 +28,10 @@ public interface Category {
      * @return the updated list of works in this category
      */
     List<Work> removeWork(Work work);
+    
+    /**
+     * Gets the category name.
+     * @return the category name
+     */
+    String getName();
 }

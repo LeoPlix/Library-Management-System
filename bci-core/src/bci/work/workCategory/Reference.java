@@ -20,13 +20,13 @@ public class Reference implements Category, Serializable {
      * Constructor for Reference category.
      */
     public Reference() {
-        _name = "Reference";
+        _name = "Referência";
         _works = new ArrayList<>();
     }
     
     @Override
     public List<Work> category(String name) {
-        if ("Reference".equals(name)) {
+        if ("REFERENCE".equals(name)) {
             return new ArrayList<>(_works);
         }
         return new ArrayList<>();

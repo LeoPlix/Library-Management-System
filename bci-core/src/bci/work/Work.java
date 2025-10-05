@@ -148,8 +148,28 @@ public abstract class Work implements Serializable {
     
     @Override
     public String toString() {
-        return _idWork + " - " + _title + " - " + _price + " - " + _category;
+        return _idWork + " - " + _availableCopies + " de " + _totalCopies + " - " + getWorkType() + " - " + _title + " - " + _price + " - " + getCategoryName() + getAdditionalInfo();
     }
+    
+    /**
+     * Gets the category name.
+     * @return the category name
+     */
+    protected String getCategoryName() {
+        return _category != null ? _category.getName() : "Unknown";
+    }
+    
+    /**
+     * Gets the work type (e.g., "Livro", "DVD").
+     * @return the work type
+     */
+    protected abstract String getWorkType();
+    
+    /**
+     * Gets additional information specific to the work type.
+     * @return additional information string
+     */
+    protected abstract String getAdditionalInfo();
     
     @Override
     public boolean equals(Object obj) {

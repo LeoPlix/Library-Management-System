@@ -20,13 +20,13 @@ public class Fiction implements Category, Serializable {
      * Constructor for Fiction category.
      */
     public Fiction() {
-        _name = "Fiction";
+        _name = "Ficção";
         _works = new ArrayList<>();
     }
     
     @Override
     public List<Work> category(String name) {
-        if ("Fiction".equals(name)) {
+        if ("FICTION".equals(name)) {
             return new ArrayList<>(_works);
         }
         return new ArrayList<>();

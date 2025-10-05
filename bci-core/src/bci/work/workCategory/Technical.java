@@ -20,13 +20,13 @@ public class Technical implements Category, Serializable {
      * Constructor for Technical category.
      */
     public Technical() {
-        _name = "Technical";
+        _name = "Técnica e Científica";
         _works = new ArrayList<>();
     }
     
     @Override
     public List<Work> category(String name) {
-        if ("Technical".equals(name)) {
+        if ("SCITECH".equals(name)) {
             return new ArrayList<>(_works);
         }
         return new ArrayList<>();

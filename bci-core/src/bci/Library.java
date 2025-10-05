@@ -4,7 +4,9 @@ import bci.exceptions.*;
 import bci.user.*;
 import bci.work.*;
 import bci.work.workCategory.*;
+import bci.work.workType.*;
 import bci.creator.*;
+import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -70,10 +72,8 @@ public class Library implements Serializable {
         }
     }
 
-    /**
-     * Processes a user entry from the import file.
-     * Format: USER|id|name|email
-     */
+
+    
     public User processUser(String... fields) throws UserRegistrationFailedException {
         int id = Integer.parseInt(fields[1]);
         String name = fields[2], email = fields[3];
@@ -86,35 +86,54 @@ public class Library implements Serializable {
         return user;
     }
 
-    /**
-     * Processes a work entry from the import file.
-     * Format: WORK|id|title|creator|price|category
-     */
+
     public Work processWork(String... fields) throws NoSuchCreatorException, UnrecognizedEntryException {
-        int id = Integer.parseInt(fields[1]);
-        String title = fields[2], creatorName = fields[3];
-        int price = Integer.parseInt(fields[4]);
-        String categoryName = fields[5];
+        String workType = fields[0];
+        String title = fields[1];
+        String creatorName = fields[2];
+        int price = Integer.parseInt(fields[3]);
+        String categoryName = fields[4];
+        String additionalInfo = fields[5]; // ISBN for BOOK, IGAC for DVD
+        int quantity = Integer.parseInt(fields[6]);
         
-        if (_works.containsKey(id)) return _works.get(id);
+        int id = getCurrentWorkID();
         
-        // Try to get existing creator first, create only if needed
         Creator creator;
         try {
             creator = creatorByKey(creatorName);
         } catch (NoSuchCreatorException e) {
-            // Creator doesn't exist, create new one
             creator = new Creator(creatorName);
             _creators.put(creatorName, creator);
         }
         
-        // Create category
-        var category = getCategoryByName(categoryName);
-        if (category == null) throw new UnrecognizedEntryException("Unknown category: " + categoryName);
+        Category category = getCategoryByName(categoryName);
         
-        var work = new SimpleWork(id, title, price, category, creator);
+        Work work = createWork(workType, id, title, price, category, additionalInfo, creator, quantity);
         _works.put(id, work);
         _changed = true;
+        return work;
+    }
+
+    
+    private Work createWork(String workType, int id, String title, int price, Category category, 
+                           String additionalInfo, Creator creator, int quantity) throws UnrecognizedEntryException {
+        Work work;
+        switch (workType.toUpperCase()) {
+            case "BOOK":
+                work = new Book(id, title, price, category, additionalInfo, Arrays.asList(creator));
+                break;
+            case "DVD":
+                work = new DVD(id, title, price, category, additionalInfo, creator);
+                break;
+            default:
+                throw new UnrecognizedEntryException(workType);
+        }
+        
+        // Set initial quantity
+        if (quantity > 1) {
+            work.changeInventory(quantity - 1); // -1 because work starts with 1 copy
+        }
+        
         return work;
     }
     
@@ -143,6 +162,7 @@ public class Library implements Serializable {
             case "FICTION":
                 return new Fiction();
             case "TECHNICAL":
+            case "SCITECH":
                 return new Technical();
             case "REFERENCE":
                 return new Reference();
@@ -151,14 +171,6 @@ public class Library implements Serializable {
         }
     }
 
-    /**
-     * Simple Work implementation for basic functionality.
-     */
-    private static class SimpleWork extends Work {
-        public SimpleWork(int id, String title, int price, Category category, Creator creator) {
-            super(id, title, price, category, creator);
-        }
-    }
 
     /**
      * Gets a user by ID.
@@ -273,7 +285,7 @@ public class Library implements Serializable {
 
 
     public int getCurrentWorkID() {
-        return _users.size() + 1;
+        return _works.size() + 1;
     }
 
     public Work getWork(int WorkId) {
