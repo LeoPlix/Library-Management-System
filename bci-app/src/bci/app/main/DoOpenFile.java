@@ -5,6 +5,7 @@ package bci.app.main;
 import bci.LibraryManager;
 import bci.app.exceptions.FileOpenFailedException;
 import bci.exceptions.UnavailableFileException;
+import bci.exceptions.ImportFileException;
 import pt.tecnico.uilib.forms.Form;
 import pt.tecnico.uilib.menus.Command;
 import pt.tecnico.uilib.menus.CommandException;
@@ -26,8 +27,21 @@ class DoOpenFile extends Command<LibraryManager> {
                 DoSaveFile cmd = new DoSaveFile(_receiver);
                 cmd.execute();
             }
-            _receiver.load(Form.requestString(Prompt.openFile()));
+            
+            String filename = Form.requestString(Prompt.openFile());
+            
+            // Check if it's an import file (text) or serialized file (binary)
+            if (filename.endsWith(".import")) {
+                // Clear current library and import text file
+                _receiver.setLibrary(new bci.Library());
+                _receiver.importFile(filename);
+            } else {
+                // Load serialized library file
+                _receiver.load(filename);
+            }
         } catch (UnavailableFileException e) {
+            throw new FileOpenFailedException(e);
+        } catch (ImportFileException e) {
             throw new FileOpenFailedException(e);
         }
     }

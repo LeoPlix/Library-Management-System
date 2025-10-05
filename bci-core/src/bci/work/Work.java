@@ -18,7 +18,7 @@ public abstract class Work implements Serializable {
     private final String _title;
     private final int _price;
     private final Category _category;
-    private final int _totalCopies;
+    private int _totalCopies;
     private int _availableCopies;
     
     /**
@@ -118,7 +118,14 @@ public abstract class Work implements Serializable {
      * @return true if successful, false if not enough inventory to remove
      */
     public void changeInventory(int amount) {
-        _availableCopies += amount;
+        if (amount > 0) {
+            // Adding copies - update both available and total
+            _availableCopies += amount;
+            _totalCopies += amount;
+        } else {
+            // Removing copies - only update available (total stays the same)
+            _availableCopies += amount;
+        }
     }
     
     /**

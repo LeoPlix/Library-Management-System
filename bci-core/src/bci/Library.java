@@ -35,7 +35,7 @@ public class Library implements Serializable {
         var reader = new BufferedReader(new FileReader(filename));
         String line;
         while ((line = reader.readLine()) != null) {
-            var fields = line.split("\\|");
+            var fields = line.split(":");
             process(fields);
         }
         _changed = true;
@@ -44,7 +44,7 @@ public class Library implements Serializable {
 
     /**
      * Processes a line from the import file.
-     * @param fields the fields from the line split by "|"
+     * @param fields the fields from the line split by ":"
      * @throws UnrecognizedEntryException if the entry type is not recognized
      * @throws NoSuchUserException if a referenced user doesn't exist
      * @throws NoSuchWorkException if a referenced work doesn't exist
@@ -62,18 +62,20 @@ public class Library implements Serializable {
             case "USER":
                 processUser(fields);
                 break;
-            case "WORK":
+            case "BOOK":
+            case "DVD":
                 processWork(fields);
                 break;
             case "REQUEST":
                 processRequest(fields);
                 break;
-            
+            default:
+                throw new UnrecognizedEntryException(fields[0]);
         }
     }
 
 
-    
+
     public User processUser(String... fields) throws UserRegistrationFailedException {
         int id = Integer.parseInt(fields[1]);
         String name = fields[2], email = fields[3];
