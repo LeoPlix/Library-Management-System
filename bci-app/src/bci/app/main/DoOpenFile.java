@@ -35,12 +35,7 @@ class DoOpenFile extends Command<LibraryManager> {
                 // Clear current library and import text file
                 _receiver.setLibrary(new bci.Library());
                 _receiver.importFile(filename);
-            } else {
-                // Load serialized library file
-                _receiver.load(filename);
-            }
-        } catch (UnavailableFileException e) {
-            throw new FileOpenFailedException(e);
+            } 
         } catch (ImportFileException e) {
             throw new FileOpenFailedException(e);
         }
