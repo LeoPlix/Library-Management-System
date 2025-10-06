@@ -20,7 +20,7 @@ import java.util.Locale;
 
 // Class that represents the library as a whole
 public class Library implements Serializable {
-    private boolean _changed = false;
+    private boolean _changed = false; //To check if it there is anything new to save
     private int _currentDate = 1;
     private Map<Integer, User> _users = new HashMap<>();
     private Map<Integer, Work> _works = new HashMap<>();
@@ -29,13 +29,33 @@ public class Library implements Serializable {
     @java.io.Serial
     private static final long serialVersionUID = 202507171003L;
 
+    /**
+     * Imports data from a specified file and processes each entry.
+     * 
+     * Reads the file line by line, splits each line into fields using the colon (:) delimiter,
+     * and processes the resulting fields. Marks the state as changed after processing.
+     * 
+     *
+     * @param filename the path to the file to import
+     * @throws UnrecognizedEntryException if an entry in the file is not recognized
+     * @throws IOException if an I/O error occurs while reading the file
+     * @throws NoSuchUserException if a referenced user does not exist
+     * @throws NoSuchWorkException if a referenced work does not exist
+     * @throws NoSuchCreatorException if a referenced creator does not exist
+     * @throws UserRegistrationFailedException if user registration fails during import
+     * @throws BorrowingRuleFailedException if a borrowing rule is violated during import
+     * @throws WorkNotBorrowedByUserException if a work is not borrowed by the specified user
+     * @throws UserIsActiveException if an operation is attempted on an active user
+     */
     void importFile(String filename) throws UnrecognizedEntryException, IOException, 
                                            NoSuchUserException, NoSuchWorkException, NoSuchCreatorException,
                                            UserRegistrationFailedException, BorrowingRuleFailedException,
                                            WorkNotBorrowedByUserException, UserIsActiveException {
         var reader = new BufferedReader(new FileReader(filename));
         String line;
+        //Read all the lines in the file
         while ((line = reader.readLine()) != null) {
+            //Separate the lines into parameters every time there are ":"
             var fields = line.split(":");
             process(fields);
         }
@@ -76,11 +96,20 @@ public class Library implements Serializable {
     }
 
 
-
     /**
-     * Processes a user entry from the import file.
-     * Format: USER:name:email
-     * ID is auto-generated incrementally
+     * Processes user registration by creating a new User with an auto-generated ID.
+     * 
+     * The method expects an array of fields where:
+     * 
+     *   fields[1] - the user's name
+     *   fields[2] - the user's email
+     * 
+     * If a user with the generated ID already exists, a UserRegistrationFailedException is thrown.
+     * The new user is added to the internal user map and marked as changed.
+     *
+     * @param fields Variable number of String arguments containing user information.
+     * @return The newly created User object.
+     * @throws UserRegistrationFailedException if a user with the generated ID already exists.
      */
     public User processUser(String... fields) throws UserRegistrationFailedException {
         // Always auto-generate ID incrementally
@@ -97,20 +126,41 @@ public class Library implements Serializable {
     }
 
 
+    /**
+     * Processes the input fields to create and register a new Work instance in the library.
+     * 
+     * The method expects the following fields in order:
+     * 
+     *   workType: The type of the work (e.g., BOOK, DVD).</li>
+     *   title: The title of the work.</li>
+     *   creatorsString: A comma-separated list of creator names.</li>
+     *   price: The price of the work as a string (will be parsed to int).</li>
+     *   categoryName: The name of the category for the work.</li>
+     *   additionalInfo: Additional information (ISBN for BOOK, IGAC for DVD).</li>
+     *   quantity: The quantity of the work as a string (will be parsed to int).</li>
+     * 
+     * If a creator does not exist, it will be created and added to the library.
+     * The method creates the work, registers it, and marks the library as changed.
+     *
+     * @param fields The fields required to create a Work, as described above.
+     * @return The created Work instance.
+     * @throws NoSuchCreatorException If a creator cannot be found and cannot be created.
+     * @throws UnrecognizedEntryException If the work type or other entry is unrecognized.
+     */
     public Work processWork(String... fields) throws NoSuchCreatorException, UnrecognizedEntryException {
         String workType = fields[0];
         String title = fields[1];
         String creatorsString = fields[2];
         int price = Integer.parseInt(fields[3]);
         String categoryName = fields[4];
-        String additionalInfo = fields[5]; // ISBN for BOOK, IGAC for DVD
+        String additionalInfo = fields[5]; // ISBN for BOOK, IGAC for DVD, etc
         int quantity = Integer.parseInt(fields[6]);
         
         int id = getCurrentWorkID();
         
         // Process multiple creators (separated by comma for books)
         List<Creator> creators = new ArrayList<>();
-        String[] creatorNames = creatorsString.split(",");
+        String[] creatorNames = creatorsString.split(","); //To split every time there is a ","
         
         for (String creatorName : creatorNames) {
             creatorName = creatorName.trim(); // Remove any extra spaces

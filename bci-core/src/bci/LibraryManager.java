@@ -11,11 +11,21 @@ import java.io.*;
  */
 public class LibraryManager {
 
-  /** The object doing all the actual work. */
   private Library _library = new Library(/**_defaultRules*/);
 
   private String _filename = "";
 
+  /**
+   * Saves the current state of the library to the associated file.
+   * <p>
+   * If there are no changes to save, the method returns immediately.
+   * If the filename is not set or is blank, a {@code MissingFileAssociationException} is thrown.
+   * The method serializes the library object and writes it to the specified file.
+   * After saving, the library's changed flag is reset.
+   *
+   * @throws MissingFileAssociationException if the filename is not set or is blank
+   * @throws IOException if an I/O error occurs during saving
+   */
   public void save() throws MissingFileAssociationException, IOException {
     if (!hasChanged()) return;
     if (_filename == null || _filename.isBlank()) 
@@ -28,11 +38,30 @@ public class LibraryManager {
     }
   }
 
+  /**
+   * Saves the current state of the library to a new file specified by the given filename.
+   * Updates the internal filename reference and delegates the actual saving process to the {@code save()} method.
+   *
+   * @param filename the name of the file to save the library state to
+   * @throws MissingFileAssociationException if there is no file associated with the library
+   * @throws IOException if an I/O error occurs during the save operation
+   */
   public void saveAs(String filename) throws MissingFileAssociationException, IOException {
     _filename = filename;
     save();
   }
 
+  /**
+   * Loads a Library object from the specified file.
+   * <p>
+   * This method attempts to deserialize a Library instance from the given filename.
+   * If successful, it updates the internal state with the loaded library and marks it as unchanged.
+   * If the file cannot be read or the class cannot be found during deserialization,
+   * an UnavailableFileException is thrown.
+   *
+   * @param filename the path to the file from which the Library should be loaded
+   * @throws UnavailableFileException if the file cannot be loaded or deserialized
+   */
   public void load(String filename) throws UnavailableFileException {
     try {
       try (ObjectInputStream ois = new ObjectInputStream(
