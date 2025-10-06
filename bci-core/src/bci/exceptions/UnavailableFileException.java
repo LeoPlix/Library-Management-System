@@ -9,7 +9,7 @@ public class UnavailableFileException extends Exception {
     private final String _filename;
 
     public UnavailableFileException(String filename) {
-        super("Erro a processar ficheiro " + filename);
+        super(filename);
         _filename = filename;
     }
 

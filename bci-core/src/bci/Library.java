@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 // Class that represents the library as a whole
 public class Library implements Serializable {
     private boolean _changed = false;
-    private int _currentDate = 0;
+    private int _currentDate = 1;
     private Map<Integer, User> _users = new HashMap<>();
     private Map<Integer, Work> _works = new HashMap<>();
     private Map<String, Creator> _creators = new HashMap<>();
