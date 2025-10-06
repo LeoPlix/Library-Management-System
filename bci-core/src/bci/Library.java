@@ -6,7 +6,7 @@ import bci.work.*;
 import bci.work.workCategory.*;
 import bci.work.workType.*;
 import bci.creator.*;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -100,7 +100,7 @@ public class Library implements Serializable {
     public Work processWork(String... fields) throws NoSuchCreatorException, UnrecognizedEntryException {
         String workType = fields[0];
         String title = fields[1];
-        String creatorName = fields[2];
+        String creatorsString = fields[2];
         int price = Integer.parseInt(fields[3]);
         String categoryName = fields[4];
         String additionalInfo = fields[5]; // ISBN for BOOK, IGAC for DVD
@@ -108,17 +108,25 @@ public class Library implements Serializable {
         
         int id = getCurrentWorkID();
         
-        Creator creator;
-        try {
-            creator = creatorByKey(creatorName);
-        } catch (NoSuchCreatorException e) {
-            creator = new Creator(creatorName);
-            _creators.put(creatorName, creator);
+        // Process multiple creators (separated by comma for books)
+        List<Creator> creators = new ArrayList<>();
+        String[] creatorNames = creatorsString.split(",");
+        
+        for (String creatorName : creatorNames) {
+            creatorName = creatorName.trim(); // Remove any extra spaces
+            Creator creator;
+            try {
+                creator = creatorByKey(creatorName);
+            } catch (NoSuchCreatorException e) {
+                creator = new Creator(creatorName);
+                _creators.put(creatorName, creator);
+            }
+            creators.add(creator);
         }
         
         Category category = getCategoryByName(categoryName);
         
-        Work work = createWork(workType, id, title, price, category, additionalInfo, creator, quantity);
+        Work work = createWork(workType, id, title, price, category, additionalInfo, creators, quantity);
         _works.put(id, work);
         _changed = true;
         return work;
@@ -126,14 +134,16 @@ public class Library implements Serializable {
 
     
     private Work createWork(String workType, int id, String title, int price, Category category, 
-                           String additionalInfo, Creator creator, int quantity) throws UnrecognizedEntryException {
+                           String additionalInfo, List<Creator> creators, int quantity) throws UnrecognizedEntryException {
         Work work;
         switch (workType.toUpperCase()) {
             case "BOOK":
-                work = new Book(id, title, price, category, additionalInfo, Arrays.asList(creator));
+                work = new Book(id, title, price, category, additionalInfo, creators);
                 break;
             case "DVD":
-                work = new DVD(id, title, price, category, additionalInfo, creator);
+                // DVDs have only one director, so we take the first creator
+                Creator director = creators.isEmpty() ? null : creators.get(0);
+                work = new DVD(id, title, price, category, additionalInfo, director);
                 break;
             default:
                 throw new UnrecognizedEntryException(workType);
