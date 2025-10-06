@@ -292,6 +292,12 @@ public class Library implements Serializable {
             .collect(Collectors.toList());
     }
 
+    public List<String> showWorks() {
+        return _works.values().stream()
+            .sorted(Comparator.comparing(Work::getIdWork))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
 
     public int getCurrentWorkID() {
         return _works.size() + 1;
