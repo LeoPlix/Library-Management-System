@@ -24,7 +24,6 @@ class DoOpenFile extends Command<LibraryManager> {
             
             String filename = Form.requestString(Prompt.openFile());
             
-            // Only load serialized library files (binary)
             _receiver.load(filename);
             
         } catch (UnavailableFileException e) {
