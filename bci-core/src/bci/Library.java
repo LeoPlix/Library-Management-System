@@ -287,7 +287,6 @@ public class Library implements Serializable {
         switch (categoryName.toUpperCase()) {
             case "FICTION":
                 return new Fiction();
-            case "TECHNICAL":
             case "SCITECH":
                 return new Technical();
             case "REFERENCE":
