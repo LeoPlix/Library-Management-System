@@ -14,7 +14,7 @@ public class LibraryManager {
 
   /**
    * Saves the current state of the library to the associated file.
-   * <p>
+   * 
    * If there are no changes to save, the method returns immediately.
    * If the filename is not set or is blank, a {@code MissingFileAssociationException} is thrown.
    * The method serializes the library object and writes it to the specified file.
@@ -50,7 +50,7 @@ public class LibraryManager {
 
   /**
    * Loads a Library object from the specified file.
-   * <p>
+   * 
    * This method attempts to deserialize a Library instance from the given filename.
    * If successful, it updates the internal state with the loaded library and marks it as unchanged.
    * If the file cannot be read or the class cannot be found during deserialization,
