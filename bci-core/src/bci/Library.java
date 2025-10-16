@@ -59,6 +59,7 @@ public class Library implements Serializable {
     private Map<Integer, User> _users = new HashMap<>();
     private Map<Integer, Work> _works = new HashMap<>();
     private Map<String, Creator> _creators = new HashMap<>();
+    private List<Request> _activeRequests = new ArrayList<>();
 
     @java.io.Serial
     private static final long serialVersionUID = 202507171003L;
@@ -119,9 +120,7 @@ public class Library implements Serializable {
             case "DVD":
                 processWork(fields);
                 break;
-            case "REQUEST":
-                processRequest(fields);
-                break;
+            // REQUEST cases no longer processed through import
             default:
                 throw new UnrecognizedEntryException(fields[0]);
         }
@@ -254,28 +253,7 @@ public class Library implements Serializable {
         
         return work;
     }
-    
 
-        /**
-     * Processes a request by creating a Request object and verifying borrowing rules.
-     *
-     * @param fields Variable number of string arguments containing request data.
-     *               fields[1]: String representation of the user ID
-     *               fields[2]: String representation of the work ID
-     * @throws NoSuchUserException If the user with the specified ID does not exist.
-     * @throws NoSuchWorkException If the work with the specified ID does not exist.
-     * @throws BorrowingRuleFailedException If borrowing rules are violated during the request.
-     * @throws UnrecognizedEntryException If the entry is not recognized.
-     * @return the request limit date for successful requests
-     */
-    public int processRequest(String... fields) throws NoSuchUserException, NoSuchWorkException, 
-                                                       BorrowingRuleFailedException, UnrecognizedEntryException {
-        int userId = Integer.parseInt(fields[1]);
-        int workId = Integer.parseInt(fields[2]);
-        
-        return requestWork(userId, workId);
-    }
-    
     /**
      * Processes a work request for interactive use.
      * 
@@ -301,6 +279,7 @@ public class Library implements Serializable {
             // All rules passed, proceed with the request
             work.removeCopy();
             user.setCurrentRequests(user.getCurrentRequests() + 1);
+            _activeRequests.add(request); // Track active request
             _changed = true;
             
             return request.getRequestLimit(); // Return limit date for success message
@@ -308,6 +287,88 @@ public class Library implements Serializable {
             // Rule violated, throw appropriate exception
             throw new BorrowingRuleFailedException(userId, workId, ruleViolated);
         }
+    }
+
+    /**
+     * Processes the return of a work by a user.
+     * 
+     * @param userId the ID of the user returning the work
+     * @param workId the ID of the work being returned
+     * @return the fine amount if any, 0 if no fine
+     * @throws NoSuchUserException if the user doesn't exist
+     * @throws NoSuchWorkException if the work doesn't exist
+     * @throws WorkNotBorrowedByUserException if the work wasn't borrowed by the user
+     */
+    public int returnWork(int userId, int workId) throws NoSuchUserException, NoSuchWorkException, 
+                                                         WorkNotBorrowedByUserException {
+        User user = userByKey(userId);
+        // Validate that work exists
+        workByKey(workId);
+        
+        // Find the active request for this user and work
+        Request activeRequest = null;
+        for (Request request : _activeRequests) {
+            if (request.getUser().getIdUser() == userId && 
+                request.getWork().getIdWork() == workId && 
+                request.getDevolutionDate() == 0) { // Not yet returned
+                activeRequest = request;
+                break;
+            }
+        }
+        
+        // If no active request found, throw exception
+        if (activeRequest == null) {
+            throw new WorkNotBorrowedByUserException(workId, userId);
+        }
+        
+        // Process the return
+        activeRequest.returnWork(_currentDate);
+        user.setCurrentRequests(user.getCurrentRequests() - 1);
+        
+        // Calculate fine if any
+        int fine = activeRequest.calculateFine(_currentDate);
+        if (fine > 0) {
+            user.addFine(fine);
+            user.suspend(); // User is suspended until fine is paid
+        }
+        
+        _changed = true;
+        return fine;
+    }
+    
+    /**
+     * Processes fine payment by a user.
+     * 
+     * @param userId the ID of the user paying the fine
+     * @param amount the amount being paid
+     * @throws NoSuchUserException if the user doesn't exist
+     * @return true if user becomes active after payment, false if still suspended
+     */
+    public boolean payFine(int userId, int amount) throws NoSuchUserException {
+        User user = userByKey(userId);
+        user.payFine(amount);
+        
+        // Check if user should be activated (no fines and no overdue works)
+        if (user.getFines() == 0) {
+            boolean hasOverdueWorks = false;
+            for (Request request : _activeRequests) {
+                if (request.getUser().getIdUser() == userId && 
+                    request.getDevolutionDate() == 0 && 
+                    request.isOverdue(_currentDate)) {
+                    hasOverdueWorks = true;
+                    break;
+                }
+            }
+            
+            if (!hasOverdueWorks) {
+                user.activate();
+                _changed = true;
+                return true;
+            }
+        }
+        
+        _changed = true;
+        return false;
     }
 
     /**
@@ -545,7 +606,6 @@ public class Library implements Serializable {
         SearchByCreator creatorSearch = new SearchByCreator();
         List<Work> creatorResults = creatorSearch.search(term, allWorks);
         
-        // Search by category
         //SearchByCategory categorySearch = new SearchByCategory();
         //List<Work> categoryResults = categorySearch.search(term, allWorks);
         

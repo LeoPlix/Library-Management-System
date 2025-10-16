@@ -38,24 +38,13 @@ class DoRequestWork extends Command<LibraryManager> {
             throw new NoSuchWorkException(workId);
 
         } catch (bci.exceptions.BorrowingRuleFailedException e) {
-            if (e.getMessage().contains("3")) { // Rule 3
+            if (e.getRuleId() == 3) { // Rule 3
                 Form.confirm(Prompt.returnNotificationPreference());
             }
-            throw new BorrowingRuleFailedException(userId, workId, extractRuleIdFromMessage(e.getMessage()));
+            else {
+                throw new BorrowingRuleFailedException(userId, workId, e.getRuleId());
+            }
         }
-    }
-    
-    /**
-     * Extracts rule ID from exception message.
-     */
-    private int extractRuleIdFromMessage(String message) {
-        if (message.contains("1")) return 1;
-        if (message.contains("2")) return 2;
-        if (message.contains("3")) return 3;
-        if (message.contains("4")) return 4;
-        if (message.contains("5")) return 5;
-        if (message.contains("6")) return 6;
-        return 1; // Default rule ID
     }
 
 }
