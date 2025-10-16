@@ -70,12 +70,8 @@ public abstract class Work implements Serializable {
     }
     
     public void changeInventory(int amount) {
-        if (amount > 0) {
             _availableCopies += amount;
             _totalCopies += amount;
-        } else {
-            _availableCopies += amount;
-        }
     }
     
     public boolean isAvailable() {
