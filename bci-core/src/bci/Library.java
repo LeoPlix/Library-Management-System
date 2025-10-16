@@ -6,6 +6,9 @@ import bci.work.*;
 import bci.work.workCategory.*;
 import bci.work.workType.*;
 import bci.creator.*;
+import bci.search.SearchByCreator;
+import bci.search.SearchByTitle;
+import bci.search.SearchByCategory;
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -504,10 +507,65 @@ public class Library implements Serializable {
         Work work = _works.get(workId);
         if (work != null) {
             work.changeInventory(amount);
-        if (amount>0) {
+        if (amount != 0) {
             setChanged(true);
         }
         }
+    }
+
+    /**
+     * Returns all works in the library as a list.
+     * 
+     * @return a {@code List<Work>} containing all works in the library
+     */
+    public List<Work> getAllWorks() {
+        return new ArrayList<>(_works.values());
+    }
+
+    /**
+     * Performs a general search by term across titles and creators.
+     * For books, searches through title and all authors.
+     * For DVDs, searches through title and director name.
+     * 
+     * @param term the search term
+     * @return a list of works matching the search term, sorted by ID
+     */
+    public List<String> searchWorks(String term) {
+        if (term == null || term.trim().isEmpty()) {
+            return showWorks();
+        }
+
+        List<Work> allWorks = getAllWorks();
+        
+        // Search by title
+        SearchByTitle titleSearch = new SearchByTitle();
+        List<Work> titleResults = titleSearch.search(term, allWorks);
+        
+        // Search by creator
+        SearchByCreator creatorSearch = new SearchByCreator();
+        List<Work> creatorResults = creatorSearch.search(term, allWorks);
+        
+        // Search by category
+        //SearchByCategory categorySearch = new SearchByCategory();
+        //List<Work> categoryResults = categorySearch.search(term, allWorks);
+        
+        // Combine results and remove duplicates, maintain order by ID
+        List<Work> combinedResults = new ArrayList<>(titleResults);
+        for (Work work : creatorResults) {
+            if (!combinedResults.contains(work)) {
+                combinedResults.add(work);
+            }
+        }
+        //for (Work work : categoryResults) {
+            //if (!combinedResults.contains(work)) {
+                //combinedResults.add(work);
+            //}
+        //}
+        
+        return combinedResults.stream()
+                .sorted(Comparator.comparing(Work::getIdWork))
+                .map(Work::toString)
+                .collect(Collectors.toList());
     }
 }
 

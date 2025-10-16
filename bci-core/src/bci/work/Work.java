@@ -51,6 +51,15 @@ public abstract class Work implements Serializable {
         return _category;
     }
     
+    /**
+     * Returns the primary creator of this work.
+     * For books with multiple authors, returns the first author.
+     * For DVDs, returns the director.
+     * 
+     * @return the primary creator of this work, or null if no creator is set
+     */
+    public abstract Creator getCreator();
+    
     public int getTotalCopies() {
         return _totalCopies;
     }
@@ -90,13 +99,13 @@ public abstract class Work implements Serializable {
         return _idWork + " - " + _availableCopies + " de " + _totalCopies + " - " + getWorkType() + " - " + _title + " - " + _price + " - " + getCategoryName() + getAdditionalInfo();
     }
 
-    protected String getCategoryName() {
+    public String getCategoryName() {
         return _category != null ? _category.getName() : "Unknown";
     }
     
-    protected abstract String getWorkType();
+    public abstract String getWorkType();
     
-    protected abstract String getAdditionalInfo();
+    public abstract String getAdditionalInfo();
     
     @Override
     public boolean equals(Object obj) {

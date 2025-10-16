@@ -1,2 +1,7 @@
+*.class
+*.jar
+*.outhyp
+*.diff
+*.dat
 po-uilib-202408310000/
 Po-uilib-202508310000 (1)

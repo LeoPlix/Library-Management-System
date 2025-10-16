@@ -39,6 +39,11 @@ public class Book extends Work {
         return new ArrayList<>(_author); // Return a copy to maintain encapsulation
     }
     
+    @Override
+    public Creator getCreator() {
+        return _author.isEmpty() ? null : _author.get(0);
+    }
+    
     public void addAuthor(Creator author) {
         if (author != null && !_author.contains(author)) {
             _author.add(author);
@@ -53,12 +58,12 @@ public class Book extends Work {
     }
     
     @Override
-    protected String getWorkType() {
+    public String getWorkType() {
         return "Livro";
     }
     
     @Override
-    protected String getAdditionalInfo() {
+    public String getAdditionalInfo() {
         StringBuilder authors = new StringBuilder();
         for (int i = 0; i < _author.size(); i++) {
             if (i > 0) authors.append("; ");

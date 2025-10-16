@@ -31,12 +31,17 @@ public class DVD extends Work {
     }
     
     @Override
-    protected String getWorkType() {
+    public Creator getCreator() {
+        return _director;
+    }
+    
+    @Override
+    public String getWorkType() {
         return "DVD";
     }
     
     @Override
-    protected String getAdditionalInfo() {
+    public String getAdditionalInfo() {
         String directorName = _director != null ? _director.getName() : "Unknown";
         return " - " + directorName + " - " + _igac;
     }
