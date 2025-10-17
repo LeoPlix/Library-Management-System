@@ -106,9 +106,10 @@ public class Request implements Serializable {
     
     /**
      * Calculates the fine amount for this request based on the current date.
+     * Fine is €5.00 per day overdue.
      * 
      * @param currentDate the current date
-     * @return the fine amount (0 if not overdue, or calculated fine if overdue)
+     * @return the fine amount (0 if not overdue, or €5 per day if overdue)
      */
     public int calculateFine(int currentDate) {
         if (!isOverdue(currentDate)) {
@@ -116,26 +117,8 @@ public class Request implements Serializable {
         }
         
         int daysLate = daysOverdue(currentDate);
-        int basePrice = _work.getPrice();
-        
-        // Fine calculation: 5 EUR + 2 EUR per day overdue + 10% of work price per day
-        int baseFine = 5;
-        int dailyFine = 2 * daysLate;
-        int percentageFine = (int) Math.ceil((basePrice * 0.1) * daysLate);
-        
-        return baseFine + dailyFine + percentageFine;
-    }
-    
-    /**
-     * Checks if this is a reference request (non-returnable).
-     * For now, this returns false as the implementation depends on work type specifics.
-     * 
-     * @return true if this is a reference request, false otherwise
-     */
-    public boolean isReference() {
-        // This would depend on the specific work type or category
-        // For now, return false - could be extended based on work category
-        return false;
+
+        return 5 * daysLate;
     }
     
     /**
@@ -145,7 +128,6 @@ public class Request implements Serializable {
      * @return true if the request is overdue, false otherwise
      */
     public boolean isOverdue(int currentDate) {
-        // Only overdue if work has been borrowed but not returned and past limit
         return _devolutionDate == 0 && currentDate > _requestLimit;
     }
     

@@ -36,8 +36,10 @@ class DoReturnWork extends Command<LibraryManager> {
                 boolean wantsToPay = Form.confirm(Prompt.finePaymentChoice());
                 
                 if (wantsToPay) {
-                    _receiver.getLibrary().payFine(userId, fine);
-                    // Note: User becomes active only if no other overdue works exist
+                    try {
+                        _receiver.getLibrary().payFine(userId, fine);
+                    } catch (bci.exceptions.UserIsActiveException e) {
+                    }
                 }
             }
             

@@ -321,6 +321,9 @@ public class Library implements Serializable {
             throw new WorkNotBorrowedByUserException(workId, userId);
         }
         
+        // Calculate fine BEFORE marking as returned
+        int fine = activeRequest.calculateFine(_currentDate);
+        
         // Process the return
         activeRequest.returnWork(_currentDate);
         user.setCurrentRequests(user.getCurrentRequests() - 1);
@@ -329,8 +332,7 @@ public class Library implements Serializable {
         boolean wasOnTime = _currentDate <= activeRequest.getRequestLimit();
         user.recordReturn(wasOnTime);
         
-        // Calculate fine if any
-        int fine = activeRequest.calculateFine(_currentDate);
+        // Add fine if any
         if (fine > 0) {
             user.addFine(fine);
             user.suspend(); // User is suspended until fine is paid
@@ -346,33 +348,69 @@ public class Library implements Serializable {
      * @param userId the ID of the user paying the fine
      * @param amount the amount being paid
      * @throws NoSuchUserException if the user doesn't exist
+     * @throws UserIsActiveException if the user is not suspended (has no fines to pay)
      * @return true if user becomes active after payment, false if still suspended
      */
-    public boolean payFine(int userId, int amount) throws NoSuchUserException {
+    public boolean payFine(int userId, int amount) throws NoSuchUserException, UserIsActiveException {
         User user = userByKey(userId);
+        
+        // Check if user is suspended and has fines to pay
+        if (!user.isSuspended() || user.getFines() == 0) {
+            throw new UserIsActiveException(userId);
+        }
+        
         user.payFine(amount);
         
-        // Check if user should be activated (no fines and no overdue works)
-        if (user.getFines() == 0) {
-            boolean hasOverdueWorks = false;
-            for (Request request : _activeRequests) {
-                if (request.getUser().getIdUser() == userId && 
-                    request.getDevolutionDate() == 0 && 
-                    request.isOverdue(_currentDate)) {
-                    hasOverdueWorks = true;
-                    break;
-                }
-            }
-            
-            if (!hasOverdueWorks) {
-                user.activate();
-                _changed = true;
-                return true;
+        // Update user status based on fines and overdue works
+        updateUserStatus(userId);
+        
+        _changed = true;
+        return !user.isSuspended();
+    }
+
+    /**
+     * Verifica e atualiza o status de um utente baseado em multas e obras em atraso.
+     * Utente é suspenso se tiver multas ou obras requisitadas fora do prazo.
+     * 
+     * @param userId the ID of the user to check
+     * @throws NoSuchUserException if the user doesn't exist
+     */
+    public void updateUserStatus(int userId) throws NoSuchUserException {
+        User user = userByKey(userId);
+        
+        // Check for overdue works
+        boolean hasOverdueWorks = false;
+        for (Request request : _activeRequests) {
+            if (request.getUser().getIdUser() == userId && 
+                request.getDevolutionDate() == 0 && 
+                request.isOverdue(_currentDate)) {
+                hasOverdueWorks = true;
+                break;
             }
         }
         
+        // Suspend if has fines or overdue works, otherwise activate
+        if (user.getFines() > 0 || hasOverdueWorks) {
+            user.suspend();
+        } else {
+            user.activate();
+        }
+        
         _changed = true;
-        return false;
+    }
+
+    /**
+     * Verifica e atualiza o status de todos os utentes no sistema.
+     * Deve ser chamado periodicamente ou quando a data avança.
+     */
+    public void updateAllUserStatuses() {
+        for (User user : _users.values()) {
+            try {
+                updateUserStatus(user.getIdUser());
+            } catch (NoSuchUserException e) {
+                // Should never happen since we're iterating over existing users
+            }
+        }
     }
 
     /**
@@ -470,14 +508,15 @@ public class Library implements Serializable {
 
     /**
      * Advances the current date by the specified number of days.
-     * If the number of days is greater than zero, the current date is incremented
-     * and the changed state is set to true.
+     * If the number of days is greater than zero, the current date is incremented,
+     * all user statuses are updated based on overdue works, and the changed state is set to true.
      *
      * @param days the number of days to advance the current date; must be positive
      */
     public void advanceDate(int days) {
         if (days > 0) {
             _currentDate += days;
+            updateAllUserStatuses(); // Check for new overdue works and update suspensions
             setChanged(true);
         }
     }

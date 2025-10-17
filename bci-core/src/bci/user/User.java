@@ -16,7 +16,7 @@ public class User implements Serializable {
     private String _email;
     private String _status;
     private UserBehavior _behavior; 
-    private int _lateRequests; 
+    private int _consecutiveLate; 
     private int _fines;
     private int _currentRequests;
     private int _consecutiveOnTime;
@@ -30,7 +30,7 @@ public class User implements Serializable {
         _email = email;
         _status = "ACTIVO";
         _behavior = new Normal();
-        _lateRequests = 0;
+        _consecutiveLate = 0;
         _fines = 0;
         _currentRequests = 0;
         _consecutiveOnTime = 0;
@@ -125,7 +125,7 @@ public class User implements Serializable {
     }
     
     public void addLateRequest(Object request) {
-        _lateRequests += 1;
+        _consecutiveLate += 1;
     }
 
     public void addConsecutiveOnTime(Object request) {
@@ -143,9 +143,9 @@ public class User implements Serializable {
     public void recordReturn(boolean wasOnTime) {
         if (wasOnTime) {
             _consecutiveOnTime++;
-            _lateRequests = 0; // Reset late requests counter
+            _consecutiveLate = 0; // Reset late requests counter
         } else {
-            _lateRequests++;
+            _consecutiveLate++;
             _consecutiveOnTime = 0; // Reset consecutive on time counter
         }
         calculateAndUpdateBehavior();
@@ -181,7 +181,7 @@ public class User implements Serializable {
             _behavior = new Dutiful();
         } 
         // Faltoso: últimas 3 requisições atrasadas  
-        else if (_lateRequests >= 3) {
+        else if (_consecutiveLate >= 3) {
             _behavior = new Overdue();
         } 
         // Normal: utente faltoso que fez 3 devoluções consecutivas no prazo, ou casos gerais
@@ -194,17 +194,22 @@ public class User implements Serializable {
         }
     }
     
+    /**
+     * Atualiza o status do utente baseado em multas e obras em atraso.
+     * Utente é suspenso se:
+     * - Tiver multas por pagar, OU
+     * - Tiver obras requisitadas fora do prazo de entrega
+     */
     public void updateStatus() {
-
         if (_fines > 0) {
-            _status = "SUSPENSO";
+            this.suspend();
         }
     }
     
     public void payFine(int amount) {
         if (amount >= _fines) {
             _fines = 0;
-            _status = "ACTIVO";
+            this.activate();
         }
     }
     
@@ -212,7 +217,7 @@ public class User implements Serializable {
     @Override
     public String toString() {
         String behaviorName = getBehavior();
-        if ("SUSPENSO".equals(_status) && _fines > 0) {
+        if ("SUSPENSO".equals(_status)) {
             return _idUser + " - " + _name + " - " + _email + " - " + behaviorName + " - " + _status + " - EUR " + _fines;
         } else {
             return _idUser + " - " + _name + " - " + _email + " - " + behaviorName + " - " + _status;
