@@ -60,6 +60,10 @@ public class Library implements Serializable {
     private Map<Integer, Work> _works = new HashMap<>();
     private Map<String, Creator> _creators = new HashMap<>();
     private List<Request> _activeRequests = new ArrayList<>();
+    
+    // Maps to track user interests in works
+    private Map<Integer, List<Integer>> _availabilityInterests = new HashMap<>(); // workId -> list of userIds interested in availability
+    private Map<Integer, List<Integer>> _borrowingInterests = new HashMap<>(); // workId -> list of userIds interested in borrowing notifications
 
     @java.io.Serial
     private static final long serialVersionUID = 202507171003L;
@@ -280,6 +284,10 @@ public class Library implements Serializable {
             work.removeCopy();
             user.setCurrentRequests(user.getCurrentRequests() + 1);
             _activeRequests.add(request); // Track active request
+            
+            // Send borrowing notifications to interested users
+            sendBorrowingNotifications(workId);
+            
             _changed = true;
             
             return request.getRequestLimit(); // Return limit date for success message
@@ -327,6 +335,15 @@ public class Library implements Serializable {
         // Process the return
         activeRequest.returnWork(_currentDate);
         user.setCurrentRequests(user.getCurrentRequests() - 1);
+        
+        // Check if the work was previously unavailable and now becomes available
+        Work work = activeRequest.getWork();
+        boolean workWasUnavailable = work.getAvailableCopies() == 1; // Will be 1 after the return
+        
+        // Send availability notifications if work was unavailable and now has copies
+        if (workWasUnavailable) {
+            sendAvailabilityNotifications(workId);
+        }
         
         // Check if return was on time and record it
         boolean wasOnTime = _currentDate <= activeRequest.getRequestLimit();
@@ -610,10 +627,17 @@ public class Library implements Serializable {
     public void changeWorkInventory(int workId, int amount) {
         Work work = _works.get(workId);
         if (work != null) {
+            boolean wasUnavailable = work.getAvailableCopies() == 0;
             work.changeInventory(amount);
-        if (amount != 0) {
-            setChanged(true);
-        }
+            
+            // If work was unavailable and now has copies (positive amount added), send notifications
+            if (wasUnavailable && amount > 0 && work.getAvailableCopies() > 0) {
+                sendAvailabilityNotifications(workId);
+            }
+            
+            if (amount != 0) {
+                setChanged(true);
+            }
         }
     }
 
@@ -669,6 +693,103 @@ public class Library implements Serializable {
                 .sorted(Comparator.comparing(Work::getIdWork))
                 .map(Work::toString)
                 .collect(Collectors.toList());
+    }
+    
+    /**
+     * Shows user notifications and clears them after display
+     * @param userId the user identifier
+     * @return list of notification messages
+     * @throws NoSuchUserException if the user doesn't exist
+     */
+    public List<String> showUserNotifications(int userId) throws NoSuchUserException {
+        User user = userByKey(userId);
+        List<Object> notifications = user.getAndClearNotifications();
+        
+        return notifications.stream()
+                .map(notification -> notification instanceof Notification 
+                    ? ((Notification) notification).getNotificationMessage()
+                    : notification.toString())
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Registers a user's interest in being notified when a work becomes available
+     * @param userId the user ID
+     * @param workId the work ID
+     */
+    public void registerAvailabilityInterest(int userId, int workId) {
+        registerInterest(_availabilityInterests, userId, workId, true);
+    }
+    
+    /**
+     * Registers a user's interest in being notified when a work is borrowed
+     * @param userId the user ID
+     * @param workId the work ID
+     */
+    public void registerBorrowingInterest(int userId, int workId) {
+        registerInterest(_borrowingInterests, userId, workId, false);
+    }
+    
+    /**
+     * Generic method to register user interest in notifications
+     */
+    private void registerInterest(Map<Integer, List<Integer>> interestMap, int userId, int workId, boolean addToUserList) {
+        interestMap.computeIfAbsent(workId, w -> new ArrayList<>()).add(userId);
+        
+        if (addToUserList) {
+            User user = _users.get(userId);
+            if (user != null) {
+                user.addInterestWork(workId);
+            }
+        }
+        _changed = true;
+    }
+    
+    /**
+     * Sends availability notifications to interested users when a work becomes available
+     */
+    private void sendAvailabilityNotifications(int workId) {
+        sendNotifications(_availabilityInterests, workId, true);
+    }
+    
+    /**
+     * Sends borrowing notifications to interested users when a work is borrowed
+     */
+    private void sendBorrowingNotifications(int workId) {
+        sendNotifications(_borrowingInterests, workId, false);
+    }
+    
+    /**
+     * Generic method to send notifications to interested users
+     * @param interestMap the map containing user interests
+     * @param workId the work ID
+     * @param isAvailability true for availability notifications, false for borrowing
+     */
+    private void sendNotifications(Map<Integer, List<Integer>> interestMap, int workId, boolean isAvailability) {
+        List<Integer> interestedUsers = interestMap.get(workId);
+        if (interestedUsers == null || interestedUsers.isEmpty()) return;
+        
+        Work work = _works.get(workId);
+        if (work == null) return;
+        
+        Notification notification = isAvailability 
+            ? new AvailabilityNotification(_currentDate, work)
+            : new BorrowingNotification(_currentDate, work);
+        
+        for (Integer userId : interestedUsers) {
+            User user = _users.get(userId);
+            if (user != null) {
+                user.addNotification(notification);
+                if (isAvailability) {
+                    user.removeInterestWork(workId); // Remove interest after availability notification
+                }
+            }
+        }
+        
+        if (isAvailability) {
+            interestMap.remove(workId); // Clear availability interests after notification
+        }
+        _changed = true;
     }
 }
 

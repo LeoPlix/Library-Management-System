@@ -20,7 +20,7 @@ public class User implements Serializable {
     private int _fines;
     private int _currentRequests;
     private int _consecutiveOnTime;
-    private List<Object> _interestWork; 
+    private List<Integer> _interestWork; 
     private List<Object> _notifications; 
     
 
@@ -211,6 +211,50 @@ public class User implements Serializable {
             _fines = 0;
             this.activate();
         }
+    }
+    
+    /**
+     * Adds a notification to the user's notification list
+     * @param notification the notification to add
+     */
+    public void addNotification(Object notification) {
+        _notifications.add(notification);
+    }
+    
+    /**
+     * Gets all user notifications and clears the list
+     * @return list of notifications in the order they were received
+     */
+    public List<Object> getAndClearNotifications() {
+        List<Object> notifications = new ArrayList<>(_notifications);
+        _notifications.clear();
+        return notifications;
+    }
+    
+    /**
+     * Adds a work to the user's interest list for availability notifications
+     * @param workId the ID of the work the user is interested in
+     */
+    public void addInterestWork(int workId) {
+        if (!_interestWork.contains(workId)) {
+            _interestWork.add(workId);
+        }
+    }
+    
+    /**
+     * Removes a work from the user's interest list
+     * @param workId the ID of the work to remove from interests
+     */
+    public void removeInterestWork(int workId) {
+        _interestWork.remove(Integer.valueOf(workId));
+    }
+    
+    /**
+     * Gets the list of works the user is interested in
+     * @return list of work IDs
+     */
+    public List<Integer> getInterestWorks() {
+        return new ArrayList<>(_interestWork);
     }
     
     

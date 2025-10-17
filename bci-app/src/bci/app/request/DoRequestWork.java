@@ -38,8 +38,12 @@ class DoRequestWork extends Command<LibraryManager> {
             throw new NoSuchWorkException(workId);
 
         } catch (bci.exceptions.BorrowingRuleFailedException e) {
-            if (e.getRuleId() == 3) { // Rule 3
-                Form.confirm(Prompt.returnNotificationPreference());
+            if (e.getRuleId() == 3) { // Rule 3: work not available
+                boolean wantsNotification = Form.confirm(Prompt.returnNotificationPreference());
+                if (wantsNotification) {
+                    // Register interest in availability notifications
+                    _receiver.getLibrary().registerAvailabilityInterest(userId, workId);
+                }
             }
             else {
                 throw new BorrowingRuleFailedException(userId, workId, e.getRuleId());
