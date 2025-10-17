@@ -8,7 +8,6 @@ import bci.work.workType.*;
 import bci.creator.*;
 import bci.search.SearchByCreator;
 import bci.search.SearchByTitle;
-import bci.search.SearchByCategory;
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
