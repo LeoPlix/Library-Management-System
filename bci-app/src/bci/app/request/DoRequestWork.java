@@ -41,8 +41,8 @@ class DoRequestWork extends Command<LibraryManager> {
             if (e.getRuleId() == 3) { // Rule 3: work not available
                 boolean wantsNotification = Form.confirm(Prompt.returnNotificationPreference());
                 if (wantsNotification) {
-                    // Register interest in availability notifications
                     _receiver.getLibrary().registerAvailabilityInterest(userId, workId);
+                    //_receiver.getLibrary().registerBorrowingInterest(userId, workId);
                 }
             }
             else {

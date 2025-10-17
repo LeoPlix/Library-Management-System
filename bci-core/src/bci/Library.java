@@ -271,6 +271,9 @@ public class Library implements Serializable {
             user.setCurrentRequests(user.getCurrentRequests() + 1);
             _activeRequests.add(request); // Track active request
             
+            // Remove borrowing interest for this user since they successfully got the work
+            removeBorrowingInterest(userId, workId);
+            
             // Send borrowing notifications to interested users
             sendBorrowingNotifications(workId);
             
@@ -655,6 +658,9 @@ public class Library implements Serializable {
         SearchByCreator creatorSearch = new SearchByCreator();
         List<Work> creatorResults = creatorSearch.search(term, allWorks);
         
+        //SearchByCategory categorySearch = new SearchByCategory();
+        //List<Work> categoryResults = categorySearch.search(term, allWorks);
+        
         // Combine results and remove duplicates, maintain order by ID
         List<Work> combinedResults = new ArrayList<>(titleResults);
         for (Work work : creatorResults) {
@@ -662,6 +668,11 @@ public class Library implements Serializable {
                 combinedResults.add(work);
             }
         }
+        //for (Work work : categoryResults) {
+            //if (!combinedResults.contains(work)) {
+                //combinedResults.add(work);
+            //}
+        //}
         
         return combinedResults.stream()
                 .sorted(Comparator.comparing(Work::getIdWork))
@@ -700,6 +711,22 @@ public class Library implements Serializable {
      */
     public void registerBorrowingInterest(int userId, int workId) {
         registerInterest(_borrowingInterests, userId, workId, false);
+    }
+    
+    /**
+     * Removes a user's interest in borrowing notifications for a specific work
+     * @param userId the user ID
+     * @param workId the work ID
+     */
+    public void removeBorrowingInterest(int userId, int workId) {
+        List<Integer> interestedUsers = _borrowingInterests.get(workId);
+        if (interestedUsers != null) {
+            interestedUsers.remove(Integer.valueOf(userId));
+            if (interestedUsers.isEmpty()) {
+                _borrowingInterests.remove(workId);
+            }
+            _changed = true;
+        }
     }
     
     /**
