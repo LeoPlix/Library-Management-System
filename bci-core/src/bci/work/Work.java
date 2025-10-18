@@ -35,6 +35,38 @@ public abstract class Work implements Serializable {
         }
     }
     
+    public void addCopy() {
+        _availableCopies++;
+    }
+    
+    public void removeCopy() {
+        if (_availableCopies > 0) {
+            _availableCopies--;
+        }
+    }
+    
+    public void changeInventory(int amount) {
+            _availableCopies += amount;
+            _totalCopies += amount;
+    }
+    
+    public boolean isAvailable() {
+        return _availableCopies > 0;
+    }
+    
+    public boolean isRequested() {
+        return false;
+    }
+    
+    public void requestCopy() {
+    }
+
+    public abstract String getWorkType();
+    
+    public abstract String getAdditionalInfo();
+
+    // ========== GETTERS ==========
+    
     public int getIdWork() {
         return _idWork;
     }
@@ -67,45 +99,12 @@ public abstract class Work implements Serializable {
     public int getAvailableCopies() {
         return _availableCopies;
     }
-    
-    public void addCopy() {
-        _availableCopies++;
-    }
-    
-    public void removeCopy() {
-        if (_availableCopies > 0) {
-            _availableCopies--;
-        }
-    }
-    
-    public void changeInventory(int amount) {
-            _availableCopies += amount;
-            _totalCopies += amount;
-    }
-    
-    public boolean isAvailable() {
-        return _availableCopies > 0;
-    }
-    
-    public boolean isRequested() {
-        return false;
-    }
-    
-    public void requestCopy() {
-    }
-    
-    @Override
-    public String toString() {
-        return _idWork + " - " + _availableCopies + " de " + _totalCopies + " - " + getWorkType() + " - " + _title + " - " + _price + " - " + getCategoryName() + getAdditionalInfo();
-    }
 
     public String getCategoryName() {
         return _category != null ? _category.getName() : "Unknown";
     }
-    
-    public abstract String getWorkType();
-    
-    public abstract String getAdditionalInfo();
+
+    // ========== EQUALS & TOSTRING ==========
     
     @Override
     public boolean equals(Object obj) {
@@ -115,4 +114,8 @@ public abstract class Work implements Serializable {
         return _idWork == work._idWork;
     }
     
+    @Override
+    public String toString() {
+        return _idWork + " - " + _availableCopies + " de " + _totalCopies + " - " + getWorkType() + " - " + _title + " - " + _price + " - " + getCategoryName() + getAdditionalInfo();
+    }
 }

@@ -22,6 +22,19 @@ public class DVD extends Work {
         }
     }
     
+    @Override
+    public String getWorkType() {
+        return "DVD";
+    }
+    
+    @Override
+    public String getAdditionalInfo() {
+        String directorName = _director != null ? _director.getName() : "Unknown";
+        return " - " + directorName + " - " + _igac;
+    }
+
+    // ========== GETTERS ==========
+    
     public String getIgac() {
         return _igac;
     }
@@ -34,17 +47,8 @@ public class DVD extends Work {
     public Creator getCreator() {
         return _director;
     }
-    
-    @Override
-    public String getWorkType() {
-        return "DVD";
-    }
-    
-    @Override
-    public String getAdditionalInfo() {
-        String directorName = _director != null ? _director.getName() : "Unknown";
-        return " - " + directorName + " - " + _igac;
-    }
+
+    // ========== TOSTRING ==========
     
     @Override
     public String toString() {

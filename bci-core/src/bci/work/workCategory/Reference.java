@@ -40,6 +40,8 @@ public class Reference implements Category, Serializable {
         _works.remove(work);
         return new ArrayList<>(_works);
     }
+
+    // ========== GETTERS ==========
     
     public String getName() {
         return _name;

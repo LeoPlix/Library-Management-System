@@ -93,29 +93,6 @@ public class LibraryManager {
     }
   }
 
-  /**
-  * @return true if the library has changed since the last save.
-  */
-  public boolean hasChanged() { 
-    return _library.getChanged();
-  }
-
-/**
-   * Gets the current library.
-   * @return the current library
-   */
-  public Library getLibrary() {
-    return _library;
-  }
-
-  /**
-   * Sets the current library.
-   * @param library the library to set
-   */
-  public void setLibrary(Library library) {
-    _library = library;
-  }
-
     /**
      * Advances the date in the library
      */
@@ -132,5 +109,32 @@ public class LibraryManager {
     public List<String> searchWorks(String term) {
         return _library.searchWorks(term);
     }
+
+  // ========== GETTERS ==========
+
+  /**
+  * @return true if the library has changed since the last save.
+  */
+  public boolean hasChanged() { 
+    return _library.getChanged();
+  }
+
+/**
+   * Gets the current library.
+   * @return the current library
+   */
+  public Library getLibrary() {
+    return _library;
+  }
+
+  // ========== SETTERS ==========
+
+  /**
+   * Sets the current library.
+   * @param library the library to set
+   */
+  public void setLibrary(Library library) {
+    _library = library;
+  }
 
 }

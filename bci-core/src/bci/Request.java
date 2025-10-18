@@ -144,7 +144,18 @@ public class Request implements Serializable {
         return currentDate - _requestLimit;
     }
     
-    // Getters and setters
+    /**
+     * Returns the request - sets the devolution date and updates work availability
+     * 
+     * @param returnDate the date when the work is returned
+     */
+    public void returnWork(int returnDate) {
+        this._devolutionDate = returnDate;
+        _work.addCopy(); // Make the work available again
+    }
+
+    // ========== GETTERS ==========
+    
     public User getUser() {
         return _user;
     }
@@ -164,27 +175,14 @@ public class Request implements Serializable {
     public int getDevolutionDate() {
         return _devolutionDate;
     }
+
+    // ========== SETTERS ==========
     
     public void setDevolutionDate(int devolutionDate) {
         this._devolutionDate = devolutionDate;
     }
-    
-    /**
-     * Returns the request - sets the devolution date and updates work availability
-     * 
-     * @param returnDate the date when the work is returned
-     */
-    public void returnWork(int returnDate) {
-        this._devolutionDate = returnDate;
-        _work.addCopy(); // Make the work available again
-    }
-    
-    @Override
-    public String toString() {
-        String status = _devolutionDate > 0 ? "Returned on day " + _devolutionDate : "Active";
-        return "Request: " + _user.getName() + " -> " + _work.getTitle() + 
-               " (Day " + _requestDate + " - " + _requestLimit + ") [" + status + "]";
-    }
+
+    // ========== EQUALS & TOSTRING ==========
     
     @Override
     public boolean equals(Object obj) {
@@ -194,5 +192,12 @@ public class Request implements Serializable {
         return _user.equals(request._user) && 
                _work.equals(request._work) && 
                _requestDate == request._requestDate;
+    }
+    
+    @Override
+    public String toString() {
+        String status = _devolutionDate > 0 ? "Returned on day " + _devolutionDate : "Active";
+        return "Request: " + _user.getName() + " -> " + _work.getTitle() + 
+               " (Day " + _requestDate + " - " + _requestLimit + ") [" + status + "]";
     }
 }

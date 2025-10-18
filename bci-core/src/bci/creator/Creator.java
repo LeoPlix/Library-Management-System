@@ -20,14 +20,6 @@ public class Creator implements Serializable {
         _works = new ArrayList<>();
     }
     
-    public String getName() {
-        return _name;
-    }
-    
-    public List<Work> getWorks() { 
-        return _works;
-    }
-    
     public void addWork(Work work) { 
         if (work != null && !_works.contains(work)) {
             _works.add(work);
@@ -41,6 +33,18 @@ public class Creator implements Serializable {
     public boolean hasWork() {
         return !_works.isEmpty();
     }
+
+    // ========== GETTERS ==========
+    
+    public String getName() {
+        return _name;
+    }
+    
+    public List<Work> getWorks() { 
+        return _works;
+    }
+
+    // ========== EQUALS & TOSTRING ==========
     
     @Override
     public boolean equals(Object obj) {

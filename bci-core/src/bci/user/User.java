@@ -39,80 +39,6 @@ public class User implements Serializable {
         _interestWork = new ArrayList<>();
         _notifications = new ArrayList<>();
     }
-    
-    public int getIdUser() {
-        return _idUser;
-    }
-    
-    public String getName() {
-        return _name;
-    }
-    
-    public String getEmail() {
-        return _email;
-    }
-    
-    public String getStatus() {
-        return _status;
-    }
-
-    public String getBehavior() {
-        String className = _behavior.getClass().getSimpleName();
-        switch (className) {
-            case "Dutiful":
-                return "CUMPRIDOR";
-            case "Overdue":
-                return "FALTOSO";
-            case "Normal":
-            default:
-                return "NORMAL";
-        }
-    }
-    
-    public UserBehavior getBehaviorObject() {
-        return _behavior;
-    }
-    
-    public void setBehavior(UserBehavior behavior) {
-        this._behavior = behavior;
-    }
-    
-    public int getFines() {
-        return _fines;
-    }
-    
-    public int getCurrentRequests() {
-        return _currentRequests;
-    }
-
-    
-    public void setIdUser(int idUser) {
-        this._idUser = idUser;
-    }
-
-    public void setName(String name) {
-        this._name = name;
-    }
-
-    public void setEmail(String email) {
-        this._email = email;
-    }
-
-    public void setStatus(String status) {
-        this._status = status;
-    }
-
-    public void setFines(int fines) {
-        this._fines = fines;
-    }
-
-    public void setCurrentRequests(int currentRequests) {
-        this._currentRequests = currentRequests;
-    }
-
-    public void setConsecutiveOnTime(int consecutiveOnTime) {
-        _consecutiveOnTime = consecutiveOnTime;
-    } 
 
     public void suspend() {
         _status = "SUSPENSO";
@@ -157,24 +83,8 @@ public class User implements Serializable {
         return "ACTIVO".equals(_status);
     }
     
-    public int getMaxAllowedWorks() {
-        return _behavior.getMaxAllowedWorks();
-    }
-    
-    public int getMaxAllowedRequestDuration() {
-        return _behavior.getMaxAllowedRequestDuration();
-    }
-    
     public boolean canBorrowExpensive() {
         return _behavior.canBorrowExpensive();
-    }
-    
-    public int getRequestDuration() {
-        return _behavior.getMaxAllowedRequestDuration();
-    }
-
-    public int getCurrentOnTime() {
-        return _consecutiveOnTime;
     }
     
     public void calculateAndUpdateBehavior() {
@@ -250,6 +160,65 @@ public class User implements Serializable {
     public void removeInterestWork(int workId) {
         _interestWork.remove(Integer.valueOf(workId));
     }
+
+    // ========== GETTERS ==========
+    
+    public int getIdUser() {
+        return _idUser;
+    }
+    
+    public String getName() {
+        return _name;
+    }
+    
+    public String getEmail() {
+        return _email;
+    }
+    
+    public String getStatus() {
+        return _status;
+    }
+
+    public String getBehavior() {
+        String className = _behavior.getClass().getSimpleName();
+        switch (className) {
+            case "Dutiful":
+                return "CUMPRIDOR";
+            case "Overdue":
+                return "FALTOSO";
+            case "Normal":
+            default:
+                return "NORMAL";
+        }
+    }
+    
+    public UserBehavior getBehaviorObject() {
+        return _behavior;
+    }
+    
+    public int getFines() {
+        return _fines;
+    }
+    
+    public int getCurrentRequests() {
+        return _currentRequests;
+    }
+    
+    public int getMaxAllowedWorks() {
+        return _behavior.getMaxAllowedWorks();
+    }
+    
+    public int getMaxAllowedRequestDuration() {
+        return _behavior.getMaxAllowedRequestDuration();
+    }
+    
+    public int getRequestDuration() {
+        return _behavior.getMaxAllowedRequestDuration();
+    }
+
+    public int getCurrentOnTime() {
+        return _consecutiveOnTime;
+    }
     
     /**
      * Gets the list of works the user is interested in
@@ -258,7 +227,42 @@ public class User implements Serializable {
     public List<Integer> getInterestWorks() {
         return new ArrayList<>(_interestWork);
     }
+
+    // ========== SETTERS ==========
     
+    public void setIdUser(int idUser) {
+        this._idUser = idUser;
+    }
+
+    public void setName(String name) {
+        this._name = name;
+    }
+
+    public void setEmail(String email) {
+        this._email = email;
+    }
+
+    public void setStatus(String status) {
+        this._status = status;
+    }
+
+    public void setBehavior(UserBehavior behavior) {
+        this._behavior = behavior;
+    }
+
+    public void setFines(int fines) {
+        this._fines = fines;
+    }
+
+    public void setCurrentRequests(int currentRequests) {
+        this._currentRequests = currentRequests;
+    }
+
+    public void setConsecutiveOnTime(int consecutiveOnTime) {
+        _consecutiveOnTime = consecutiveOnTime;
+    } 
+
+    // ========== TOSTRING ==========
     
     @Override
     public String toString() {

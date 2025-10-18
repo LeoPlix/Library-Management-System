@@ -53,6 +53,10 @@ import java.util.Locale;
  * @version 202507171003L
  */
 public class Library implements Serializable {
+    
+    @java.io.Serial
+    private static final long serialVersionUID = 202507171003L;
+    
     private boolean _changed = false; //To check if it there is anything new to save
     private int _currentDate = 1;
     private Map<Integer, User> _users = new HashMap<>();
@@ -63,9 +67,6 @@ public class Library implements Serializable {
     // Maps to track user interests in works
     private Map<Integer, List<Integer>> _availabilityInterests = new HashMap<>(); // workId -> list of userIds interested in availability
     private Map<Integer, List<Integer>> _borrowingInterests = new HashMap<>(); // workId -> list of userIds interested in borrowing notifications
-
-    @java.io.Serial
-    private static final long serialVersionUID = 202507171003L;
 
     /**
      * Imports data from a specified file and processes it.
@@ -433,45 +434,6 @@ public class Library implements Serializable {
         };
     }
 
-
-    /**
-     * Gets a user by ID.
-     * @param id the user ID
-     * @return the user
-     * @throws NoSuchUserException if user doesn't exist
-     */
-    public User userByKey(int id) throws NoSuchUserException {
-        var user = _users.get(id);
-        if (user == null) throw new NoSuchUserException(id);
-        return user;
-    }
-
-    /**
-     * Gets a work by ID.
-     * @param id the work ID
-     * @return the work
-     * @throws NoSuchWorkException if work doesn't exist
-     */
-    public Work workByKey(int id) throws NoSuchWorkException {
-        var work = _works.get(id);
-        if (work == null) throw new NoSuchWorkException(id);
-        return work;
-    }
-
-    /**
-     * Gets a creator by name.
-     * @param name the creator name
-     * @return the creator
-     * @throws NoSuchCreatorException if creator doesn't exist
-     */
-    public Creator creatorByKey(String name) throws NoSuchCreatorException {
-        var creator = _creators.get(name);
-        if (creator == null) throw new NoSuchCreatorException(name);
-        return creator;
-    }
-
-
-
     /**
      * Marks the object as changed by setting its changed state to {@code true}.
      * This method should be called whenever the object's state is modified
@@ -479,33 +441,6 @@ public class Library implements Serializable {
      */
     public void changed() {
         setChanged(true);
-    }
-    
-    /**
-     * Returns whether the state has changed.
-     *
-     * @return {@code true} if the state has changed; {@code false} otherwise.
-     */
-    public boolean getChanged() {
-        return _changed;
-    }
-
-    /**
-     * Sets the changed state of the object.
-     *
-     * @param changed {@code true} if the object has been changed; {@code false} otherwise.
-     */
-    public void setChanged(boolean changed) {
-        _changed = changed;
-    }
-
-    /**
-     * Returns the current date value.
-     *
-     * @return the current date as an integer
-     */
-    public int getCurrentDate() {
-        return _currentDate;
     }
 
     /**
@@ -523,86 +458,6 @@ public class Library implements Serializable {
         }
     }
 
-    /**
-     * Returns the current user ID, which is calculated as the size of the user list plus one.
-     *
-     * @return the current user ID
-     */
-    public int getCurrentUserID() {
-        return _users.size() + 1;
-    }
-
-
-    /**
-     * Retrieves the {@link User} object associated with the specified user ID.
-     *
-     * @param userId the unique identifier of the user to retrieve
-     * @return the {@link User} corresponding to the given userId, or {@code null} if no such user exists
-     */
-    public User getUser(int userId) {
-        return _users.get(userId);
-    }
-
-    /**
-     * Returns a list of all users in the library, sorted first by user name and then by user ID.
-     * Each user is represented as a string using their {@code toString()} method.
-     *
-     * @return a list of string representations of users, sorted by name and ID
-     */
-    public List<String> showUsers() {
-        return _users.values().stream()
-            .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
-            .map(User::toString)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns a list of string representations of all works, sorted by their work ID.
-     *
-     * @return a {@code List<String>} containing the string representations of the works,
-     *         sorted in ascending order by their IDs.
-     */
-    public List<String> showWorks() {
-        return _works.values().stream()
-            .sorted(Comparator.comparing(Work::getIdWork))
-            .map(Work::toString)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Shows all works by a specific creator, ordered by title.
-     * @param creatorName the name of the creator
-     * @return list of works by the creator formatted as strings
-     * @throws NoSuchCreatorException if the creator doesn't exist
-     */
-    public List<String> showWorksByCreator(String creatorName) throws NoSuchCreatorException {
-        Creator creator = creatorByKey(creatorName);
-        return creator.getWorks().stream()
-            .sorted(Comparator.comparing(work -> work.getTitle().toLowerCase(Locale.getDefault())))
-            .map(Work::toString)
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * Returns the next available work ID based on the current number of works.
-     * The ID is calculated as the size of the works collection plus one.
-     *
-     * @return the next work ID to be assigned
-     */
-    public int getCurrentWorkID() {
-        return _works.size() + 1;
-    }
-
-    /**
-     * Retrieves a {@link Work} object by its unique identifier.
-     *
-     * @param WorkId the unique identifier of the work to retrieve
-     * @return the {@link Work} associated with the specified ID, or {@code null} if not found.
-     */
-    public Work getWork(int WorkId) {
-        return _works.get(WorkId);
-    }
-    
     /**
      * Changes the inventory of a work by the specified amount. 
      * @param workId the work identifier
@@ -626,75 +481,6 @@ public class Library implements Serializable {
         }
     }
 
-    /**
-     * Returns all works in the library as a list.
-     * 
-     * @return a {@code List<Work>} containing all works in the library
-     */
-    public List<Work> getAllWorks() {
-        return new ArrayList<>(_works.values());
-    }
-
-    /**
-     * Performs a general search by term across titles and creators.
-     * For books, searches through title and all authors.
-     * For DVDs, searches through title and director name.
-     * 
-     * @param term the search term
-     * @return a list of works matching the search term, sorted by ID
-     */
-    public List<String> searchWorks(String term) {
-        if (term == null || term.trim().isEmpty()) {
-            return showWorks();
-        }
-
-        List<Work> allWorks = getAllWorks();
-        
-        // Search by title
-        SearchByTitle titleSearch = new SearchByTitle();
-        List<Work> titleResults = titleSearch.search(term, allWorks);
-        
-        // Search by creator
-        SearchByCreator creatorSearch = new SearchByCreator();
-        List<Work> creatorResults = creatorSearch.search(term, allWorks);
-        
-        //SearchByCategory categorySearch = new SearchByCategory();
-        //List<Work> categoryResults = categorySearch.search(term, allWorks);
-        
-        // Combine results and remove duplicates, maintain order by ID
-        List<Work> combinedResults = new ArrayList<>(titleResults);
-        for (Work work : creatorResults) {
-            if (!combinedResults.contains(work)) {
-                combinedResults.add(work);
-            }
-        }
-        //for (Work work : categoryResults) {
-            //if (!combinedResults.contains(work)) {
-                //combinedResults.add(work);
-            //}
-        //}
-        
-        return combinedResults.stream()
-                .sorted(Comparator.comparing(Work::getIdWork))
-                .map(Work::toString)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Shows user notifications and clears them after display
-     * @param userId the user identifier
-     * @return list of notification messages
-     * @throws NoSuchUserException if the user doesn't exist
-     */
-    public List<String> showUserNotifications(int userId) throws NoSuchUserException {
-        User user = userByKey(userId);
-        List<Notification> notifications = user.getAndClearNotifications();
-        
-        return notifications.stream()
-                .map(Notification::getNotificationMessage)
-                .collect(Collectors.toList());
-    }
-    
     /**
      * Registers a user's interest in being notified when a work becomes available
      * @param userId the user ID
@@ -789,6 +575,221 @@ public class Library implements Serializable {
             interestMap.remove(workId); // Clear availability interests after notification
         }
         _changed = true;
+    }
+
+    // ========== GETTERS ==========
+
+    /**
+     * Gets a user by ID.
+     * @param id the user ID
+     * @return the user
+     * @throws NoSuchUserException if user doesn't exist
+     */
+    public User userByKey(int id) throws NoSuchUserException {
+        var user = _users.get(id);
+        if (user == null) throw new NoSuchUserException(id);
+        return user;
+    }
+
+    /**
+     * Gets a work by ID.
+     * @param id the work ID
+     * @return the work
+     * @throws NoSuchWorkException if work doesn't exist
+     */
+    public Work workByKey(int id) throws NoSuchWorkException {
+        var work = _works.get(id);
+        if (work == null) throw new NoSuchWorkException(id);
+        return work;
+    }
+
+    /**
+     * Gets a creator by name.
+     * @param name the creator name
+     * @return the creator
+     * @throws NoSuchCreatorException if creator doesn't exist
+     */
+    public Creator creatorByKey(String name) throws NoSuchCreatorException {
+        var creator = _creators.get(name);
+        if (creator == null) throw new NoSuchCreatorException(name);
+        return creator;
+    }
+
+    /**
+     * Returns whether the state has changed.
+     *
+     * @return {@code true} if the state has changed; {@code false} otherwise.
+     */
+    public boolean getChanged() {
+        return _changed;
+    }
+
+    /**
+     * Returns the current date value.
+     *
+     * @return the current date as an integer
+     */
+    public int getCurrentDate() {
+        return _currentDate;
+    }
+
+    /**
+     * Returns the current user ID, which is calculated as the size of the user list plus one.
+     *
+     * @return the current user ID
+     */
+    public int getCurrentUserID() {
+        return _users.size() + 1;
+    }
+
+    /**
+     * Retrieves the {@link User} object associated with the specified user ID.
+     *
+     * @param userId the unique identifier of the user to retrieve
+     * @return the {@link User} corresponding to the given userId, or {@code null} if no such user exists
+     */
+    public User getUser(int userId) {
+        return _users.get(userId);
+    }
+
+    /**
+     * Returns the next available work ID based on the current number of works.
+     * The ID is calculated as the size of the works collection plus one.
+     *
+     * @return the next work ID to be assigned
+     */
+    public int getCurrentWorkID() {
+        return _works.size() + 1;
+    }
+
+    /**
+     * Retrieves a {@link Work} object by its unique identifier.
+     *
+     * @param WorkId the unique identifier of the work to retrieve
+     * @return the {@link Work} associated with the specified ID, or {@code null} if not found.
+     */
+    public Work getWork(int WorkId) {
+        return _works.get(WorkId);
+    }
+
+    /**
+     * Returns all works in the library as a list.
+     * 
+     * @return a {@code List<Work>} containing all works in the library
+     */
+    public List<Work> getAllWorks() {
+        return new ArrayList<>(_works.values());
+    }
+
+    /**
+     * Returns a list of all users in the library, sorted first by user name and then by user ID.
+     * Each user is represented as a string using their {@code toString()} method.
+     *
+     * @return a list of string representations of users, sorted by name and ID
+     */
+    public List<String> showUsers() {
+        return _users.values().stream()
+            .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
+            .map(User::toString)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a list of string representations of all works, sorted by their work ID.
+     *
+     * @return a {@code List<String>} containing the string representations of the works,
+     *         sorted in ascending order by their IDs.
+     */
+    public List<String> showWorks() {
+        return _works.values().stream()
+            .sorted(Comparator.comparing(Work::getIdWork))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Shows all works by a specific creator, ordered by title.
+     * @param creatorName the name of the creator
+     * @return list of works by the creator formatted as strings
+     * @throws NoSuchCreatorException if the creator doesn't exist
+     */
+    public List<String> showWorksByCreator(String creatorName) throws NoSuchCreatorException {
+        Creator creator = creatorByKey(creatorName);
+        return creator.getWorks().stream()
+            .sorted(Comparator.comparing(work -> work.getTitle().toLowerCase(Locale.getDefault())))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Performs a general search by term across titles and creators.
+     * For books, searches through title and all authors.
+     * For DVDs, searches through title and director name.
+     * 
+     * @param term the search term
+     * @return a list of works matching the search term, sorted by ID
+     */
+    public List<String> searchWorks(String term) {
+        if (term == null || term.trim().isEmpty()) {
+            return showWorks();
+        }
+
+        List<Work> allWorks = getAllWorks();
+        
+        // Search by title
+        SearchByTitle titleSearch = new SearchByTitle();
+        List<Work> titleResults = titleSearch.search(term, allWorks);
+        
+        // Search by creator
+        SearchByCreator creatorSearch = new SearchByCreator();
+        List<Work> creatorResults = creatorSearch.search(term, allWorks);
+        
+        //SearchByCategory categorySearch = new SearchByCategory();
+        //List<Work> categoryResults = categorySearch.search(term, allWorks);
+        
+        // Combine results and remove duplicates, maintain order by ID
+        List<Work> combinedResults = new ArrayList<>(titleResults);
+        for (Work work : creatorResults) {
+            if (!combinedResults.contains(work)) {
+                combinedResults.add(work);
+            }
+        }
+        //for (Work work : categoryResults) {
+            //if (!combinedResults.contains(work)) {
+                //combinedResults.add(work);
+            //}
+        //}
+        
+        return combinedResults.stream()
+                .sorted(Comparator.comparing(Work::getIdWork))
+                .map(Work::toString)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Shows user notifications and clears them after display
+     * @param userId the user identifier
+     * @return list of notification messages
+     * @throws NoSuchUserException if the user doesn't exist
+     */
+    public List<String> showUserNotifications(int userId) throws NoSuchUserException {
+        User user = userByKey(userId);
+        List<Notification> notifications = user.getAndClearNotifications();
+        
+        return notifications.stream()
+                .map(Notification::getNotificationMessage)
+                .collect(Collectors.toList());
+    }
+
+    // ========== SETTERS ==========
+
+    /**
+     * Sets the changed state of the object.
+     *
+     * @param changed {@code true} if the object has been changed; {@code false} otherwise.
+     */
+    public void setChanged(boolean changed) {
+        _changed = changed;
     }
 }
 
