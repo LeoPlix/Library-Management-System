@@ -367,7 +367,7 @@ public class Library implements Serializable {
             throw new UserIsActiveException(userId);
         }
         
-        user.payFine(amount);
+        user.zeroFine(amount); // Amount is ignored, always pays all fines
         
         // Update user status based on fines and overdue works
         updateUserStatus(userId);
@@ -575,7 +575,7 @@ public class Library implements Serializable {
                 }
                 user.addNotification(notification);
                 if (isAvailability) {
-                    user.removeInterestWork(workId); // Remove interest after availability notification
+                    user.removeInterestWork(workId);
                 }
             }
         }

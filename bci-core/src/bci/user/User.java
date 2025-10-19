@@ -88,22 +88,24 @@ public class User implements Serializable {
     }
     
     public void calculateAndUpdateBehavior() {
-        // Cumpridor: últimas 5 requisições rigorosamente no prazo
+        // Cumpridor: 5 devoluções consecutivas no prazo
         if (_consecutiveOnTime >= 5) {
             _behavior = new Dutiful();
-        } 
-        // Faltoso: últimas 3 requisições atrasadas  
+        }
+        // Faltoso: 3 devoluções consecutivas atrasadas
         else if (_consecutiveLate >= 3) {
             _behavior = new Overdue();
-        } 
-        // Normal: utente faltoso que fez 3 devoluções consecutivas no prazo, ou casos gerais
+        }
+        // Recuperação de faltoso para normal: utente faltoso que fez 3 devoluções consecutivas no prazo
         else if (_behavior instanceof Overdue && _consecutiveOnTime >= 3) {
             _behavior = new Normal();
-        } 
-        // Todos os outros casos: normal
-        else {
+        }
+        // Caso padrão para novos utentes ou situações intermédias
+        else if (_consecutiveOnTime == 0 && _consecutiveLate == 0) {
             _behavior = new Normal();
         }
+        // Manter comportamento atual em casos intermédios
+        // (Dutiful que ainda não violou, Overdue que ainda não recuperou, Normal em progresso)
     }
     
     /**
@@ -118,11 +120,8 @@ public class User implements Serializable {
         }
     }
     
-    public void payFine(int amount) {
-        if (amount >= _fines) {
-            _fines = 0;
-            this.activate();
-        }
+    public void zeroFine(int amount) {
+        _fines = 0; // Sempre paga a multa inteiramente
     }
     
     /**
