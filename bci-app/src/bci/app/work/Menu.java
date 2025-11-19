@@ -10,7 +10,10 @@ public class Menu extends pt.tecnico.uilib.menus.Menu {
                 new DoDisplayWorks(receiver), //
                 new DoPerformSearch(receiver), //
                 new DoDisplayWorksByCreator(receiver), //
-                new DoChangeWorkInventory(receiver) //
+                new DoChangeWorkInventory(receiver),
+                new DoDisplayEvenWorks(receiver), //
+                new DoDisplayWorksByCategory(receiver),
+                new DoDisplayWorksWithoutStock(receiver)
         );
     }
 

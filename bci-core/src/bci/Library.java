@@ -2,6 +2,7 @@ package bci;
 
 import bci.exceptions.*;
 import bci.user.*;
+import bci.user.behaviorInterface.Dutiful;
 import bci.work.*;
 import bci.work.workCategory.*;
 import bci.work.workType.*;
@@ -272,8 +273,9 @@ public class Library implements Serializable {
             user.setCurrentRequests(user.getCurrentRequests() + 1);
             _activeRequests.add(request); // Track active request
             
-            // Remove borrowing interest for this user since they successfully got the work
+            // Remove interests for this user since they successfully got the work
             removeBorrowingInterest(userId, workId);
+            removeAvailabilityInterest(userId, workId);
             
             // Send borrowing notifications to interested users
             sendBorrowingNotifications(workId);
@@ -517,6 +519,26 @@ public class Library implements Serializable {
     }
     
     /**
+     * Removes a user's interest in availability notifications for a specific work
+     * @param userId the user ID
+     * @param workId the work ID
+     */
+    public void removeAvailabilityInterest(int userId, int workId) {
+        List<Integer> interestedUsers = _availabilityInterests.get(workId);
+        if (interestedUsers != null) {
+            interestedUsers.remove(Integer.valueOf(userId));
+            if (interestedUsers.isEmpty()) {
+                _availabilityInterests.remove(workId);
+            }
+            User user = _users.get(userId);
+            if (user != null) {
+                user.removeInterestWork(workId);
+            }
+            _changed = true;
+        }
+    }
+    
+    /**
      * Generic method to register user interest in notifications
      */
     public void registerInterest(Map<Integer, List<Integer>> interestMap, int userId, int workId, boolean addToUserList) {
@@ -657,8 +679,9 @@ public class Library implements Serializable {
      * @param userId the unique identifier of the user to retrieve
      * @return the {@link User} corresponding to the given userId, or {@code null} if no such user exists
      */
-    public User getUser(int userId) {
-        return _users.get(userId);
+    public String getWorkAndNotifications(int workId) {
+        Work u1 = _works.get(workId);
+        return u1.toString() + "\nTotal de notificações: " + u1.getCreatorNumber();
     }
 
     /**
@@ -697,7 +720,17 @@ public class Library implements Serializable {
      * @return a list of string representations of users, sorted by name and ID
      */
     public List<String> showUsers() {
+        List<String> list = new ArrayList <> (_users.values().stream()
+            .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
+            .map(User::toString)
+            .collect(Collectors.toList()));
+        list.add("Total users: " + _users.size());
+        return list;
+    }
+
+    public List<String> showDutifulUsers() {
         return _users.values().stream()
+            .filter(u -> u.getBehaviorObject() instanceof Dutiful)
             .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
             .map(User::toString)
             .collect(Collectors.toList());
@@ -715,6 +748,48 @@ public class Library implements Serializable {
             .map(Work::toString)
             .collect(Collectors.toList());
     }
+
+    public List<String> showWorksWithoutStock() {
+        return _works.values().stream()
+            .filter(Work::isUnavailable)
+            .sorted(Comparator.comparing(Work::getIdWork))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
+
+        public List<String> showUsersWithoutRequests() {
+        return _users.values().stream()
+            .filter(u -> u.getCurrentRequests() == 0)
+            .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
+            .map(User::toString)
+            .collect(Collectors.toList());
+    }
+
+    public List<String> showEvenWorks() {
+        return _works.values().stream()
+            .filter(w -> w.getTotalCopies() % 2 == 0)
+            .sorted(Comparator.comparing(Work::getIdWork))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
+    
+
+    public List<String> showScitechWorks() {
+        return _works.values().stream()
+            .filter(w -> w.getCategory() instanceof Technical)
+            .sorted(Comparator.comparing(Work::getIdWork))
+            .map(Work::toString)
+            .collect(Collectors.toList());
+    }
+
+    public List<String> showUsersWithoutNotifications() {
+        return _users.values().stream()
+            .filter(User::hasNoNotifications)
+            .sorted(Comparator.comparing(User::getName).thenComparing(User::getIdUser))
+            .map(User::toString)
+            .collect(Collectors.toList());
+    }
+    
 
     /**
      * Shows all works by a specific creator, ordered by title.

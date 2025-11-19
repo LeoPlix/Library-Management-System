@@ -74,6 +74,11 @@ public class Book extends Work {
         return _author.isEmpty() ? null : _author.get(0);
     }
 
+    @Override
+    public int getCreatorNumber() {
+        return _author.size();
+    }
+
     // ========== TOSTRING ==========
     
     @Override

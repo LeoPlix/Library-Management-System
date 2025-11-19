@@ -10,7 +10,10 @@ public class Menu extends pt.tecnico.uilib.menus.Menu {
                 new DoShowUser(receiver), //
                 new DoShowUsers(receiver), //
                 new DoShowUserNotifications(receiver), //
-                new DoPayFine(receiver) //
+                new DoPayFine(receiver), //
+                new DoShowUsersWithoutRequests(receiver),
+                new DoShowUsersWithoutNotifications(receiver),
+                new DoShowDutifulUsers(receiver)
         );
     }
 

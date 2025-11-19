@@ -8,5 +8,7 @@ interface Label {
     String SHOW_USER_NOTIFICATIONS = "Mostrar notificações de utente";
     String SHOW_USERS = "Listar utentes";
     String PAY_FINE = "Saldar multa de utente";
+    String SHOW_USER_WITHOUT_REQUESTS = "Mostrar utentes sem requisições";
+    String SHOW_NO_NOTIFICATIONS = "Listar utentes sem notificações";
 
 }

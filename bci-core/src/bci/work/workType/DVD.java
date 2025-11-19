@@ -48,6 +48,11 @@ public class DVD extends Work {
         return _director;
     }
 
+    @Override
+    public int getCreatorNumber() {
+        return 1;
+    }
+
     // ========== TOSTRING ==========
     
     @Override

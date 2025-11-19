@@ -53,6 +53,10 @@ public abstract class Work implements Serializable {
     public boolean isAvailable() {
         return _availableCopies > 0;
     }
+
+    public boolean isUnavailable() {
+        return _availableCopies == 0;
+    }
     
     public boolean isRequested() {
         return false;
@@ -91,6 +95,8 @@ public abstract class Work implements Serializable {
      * @return the primary creator of this work, or null if no creator is set
      */
     public abstract Creator getCreator();
+
+    public abstract int getCreatorNumber();
     
     public int getTotalCopies() {
         return _totalCopies;

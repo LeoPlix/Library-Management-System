@@ -17,12 +17,12 @@ class DoShowUser extends Command<LibraryManager> {
     @Override
     protected final void execute() throws CommandException {
         int userId = integerField("userId");
-        User user = _receiver.getLibrary().getUser(userId);
+        String user = _receiver.getLibrary().getUser(userId);
 
         if (user == null) {
             throw new NoSuchUserException(userId);
         }
 
-        _display.popup(user.toString());
+        _display.popup(user);
     }
 }

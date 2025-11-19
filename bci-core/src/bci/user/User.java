@@ -168,6 +168,9 @@ public class User implements Serializable {
         return !_notifications.isEmpty();
     }
 
+    public boolean hasNoNotifications() {
+        return _notifications.isEmpty();
+    }
     // ========== GETTERS ==========
     
     public int getIdUser() {
@@ -226,6 +229,10 @@ public class User implements Serializable {
     public int getCurrentOnTime() {
         return _consecutiveOnTime;
     }
+
+    public List<Notification> getNotifications() {
+        return _notifications;
+    }
     
     /**
      * Gets the list of works the user is interested in
@@ -234,6 +241,7 @@ public class User implements Serializable {
     public List<Integer> getInterestWorks() {
         return new ArrayList<>(_interestWork);
     }
+    
 
     // ========== SETTERS ==========
     
