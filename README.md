@@ -1,291 +1,233 @@
-Sistema de Gestão de Biblioteca — Especificação do Projeto
+# Library Management System — Project Specification
 
-O objectivo do projeto é desenvolver um sistema completo para gestão do acervo de uma biblioteca. O sistema deve permitir operações como pesquisar obras, registar utentes, registar obras e registar requisições. O software deve ser extensível, seguindo o princípio aberto-fechado, facilitando a introdução de novas categorias, tipos de obras, regras ou comportamentos.
+## Project Goal
+Develop a complete system for managing a library collection. The system must allow operations such as searching works, registering users, registering works, and registering loans (requests), among others.
 
-Conceitos e Relações do Modelo
+---
 
-O modelo envolve quatro conceitos principais:
+## Concepts and Relationships
 
-Criadores
+The model revolves around four main concepts:
 
-Obras
+- Creators
+- Works
+- Users
+- Requests (Loans)
 
-Utentes
+Additional entities may exist depending on the chosen implementation.
 
-Requisições
+---
 
-Podem existir mais entidades, dependendo da implementação escolhida para o projeto.
+## Creators
+A creator represents an author or director.
 
-Criadores
+Each creator:
+- Has a name used as a unique identifier in the application.
+- Maintains an up-to-date list of works they created.
+- Must be removed from the system if they no longer have any works.
 
-Um criador representa um autor ou realizador.
-Cada criador:
+The implementation should allow adding properties to creators without impacting existing code.
 
-Tem um nome, usado como identificador único na aplicação
+---
 
-Mantém uma lista atualizada das obras que criou
+## Works
+The system keeps a set of works. Each work is identified by:
+- Work number (automatic, incremental)
+- Title
+- Price (integer)
+- Category
+- Number of available copies
 
-Deve ser removido do sistema caso deixe de ter obras
+Initial categories:
+- Reference works
+- Fiction works
+- Technical and scientific works
 
-A implementação deve permitir adicionar propriedades aos criadores sem impactar o código existente.
+The application should make it easy to create new categories.
 
-Obras
+Initial supported work types:
+- Books
+  - Authors (one or more creators)
+  - ISBN (10 or 13 characters)
+- DVDs
+  - Director (one creator)
+  - IGAC registration number
 
-O sistema mantém um conjunto de obras, cada uma identificada por:
+The architecture should allow adding new work types (e.g., CDs, VHS) with minimal impact.
 
-Número de obra (atribuição automática e incremental)
+---
 
-Título
+## Users
+Each user has:
+- User number (automatic, incremental)
+- Name
+- Email address
+- Status (active or suspended)
 
-Preço (inteiro)
+A user becomes suspended if they return works late, and remains suspended until they return the overdue works and pay all fines.
 
-Categoria
+User classifications (based on recent behavior):
+- Default categories:
+  - Faulty: failed in the last 3 requests
+  - Compliant: met the deadlines in the last 5 requests
+  - Normal: any other case
+- Faulty → can return to Normal after 3 consecutive on-time returns
 
-Número de exemplares disponíveis
+Classification must be extensible for new criteria.
 
-Categorias iniciais:
+---
 
-Obras de referência
+## Requests (Loans)
+Request rules are checked in order (system rules):
 
-Obras de ficção
+1. A user cannot request the same work twice at the same time.
+2. A suspended user cannot request works.
+3. A user cannot request a work when there are no available copies.
+4. Maximum simultaneous loans:
+   - Normal: 3
+   - Compliant: 5
+   - Faulty: 1
+5. Reference works cannot be loaned.
+6. Works priced over €25 cannot be loaned (except by Compliant users).
 
-Obras técnicas e científicas
+If rule 3 is violated (no copies available), the user can ask to be notified when a copy becomes available.
 
-A aplicação deve permitir a criação de novas categorias facilmente.
+Loan periods (in days) depend on the number of copies and user classification:
 
-Tipos de obras inicialmente suportadas:
-Livros
+| Number of copies    | Normal | Compliant | Faulty |
+|---------------------|--------|-----------|--------|
+| 1 copy              | 3      | 8         | 2      |
+| ≤ 5 copies          | 8      | 15        | 2      |
+| > 5 copies          | 15     | 30        | 2      |
 
-Autores (um ou mais criadores)
+Fines: €5 per day of delay (fractions count as a full day).
 
-ISBN (10 ou 13 caracteres)
+Loan rules and deadlines must be easily extensible.
+
+---
 
-DVDs
+## Search
+The system must allow searching by term across the relevant fields of each work. It should be easy to add new search methods with minimal impact.
 
-Realizador (um criador)
+---
 
-Número de registo IGAC
+## Inventory Changes
+- The number of copies of a work can be adjusted by addition or subtraction.
+- If the number of copies reaches 0 → the work is removed from the system.
+- Removing works affects the list of creators (creators with no works should be removed).
 
-A arquitectura deve permitir adicionar novos tipos de obras (ex.: CDs, VHS) com impacto mínimo.
+---
 
-Utentes
+## Time Management
+- System date is measured in days, starting at 1.
+- Advancing the date updates user statuses and due dates.
+- The system date is part of the persisted state.
 
-Cada utente possui:
+---
 
-Número de utente (automático e incremental)
+## Notifications
+The system sends notifications when:
+- A work is loaned
+- An unavailable work becomes available again
 
-Nome
+Notes:
+- Each notification is shown only once to the user.
+- A user's interest in availability is removed when they are able to borrow the work.
+- Interest in loan notifications persists while valid.
 
-Endereço de e-mail
+---
 
-Situação (activo ou suspenso)
+## Design Requirements
+The architecture must follow the Open-Closed Principle.
 
-Um utente fica suspenso se entregar obras fora do prazo e permanece suspenso até devolver as obras em atraso e pagar todas as multas.
+The application must allow, with minimal impact:
+- New work types
+- New notifiable entities
+- New loan rules
+- New loan deadlines
+- New user classifications
+- Removing any entity
 
-Classificação dos Utentes
+---
 
-Comportamentos recentes condicionam a classificação:
+## Application Functionality
+The system must:
+- Maintain data for users, works, and requests
+- Preserve state through serialization
+- Allow removal of any entity
+- Load initial state from a text file (if specified by a Java property import)
 
-Faltoso: falha nas últimas 3 requisições
+---
 
-Cumpridor: cumpre os prazos nas últimas 5 requisições
+## User Interaction
+A UI is pre-implemented in the supplied packages (bci-app).
+- Commands receive data via forms and write via display.
+- Domain exceptions must not use UI messages.
+- The UI uses exceptions such as NoSuchUserException, NoSuchWorkException, etc.
+- Operations that fail must not change application state (unless explicitly stated otherwise).
 
-Normal: qualquer outro caso
+---
 
-Faltoso → pode voltar a normal após 3 entregas consecutivas dentro do prazo
+## Main Menu (already implemented in bci.app.main)
+Includes:
+- Open state file
+- Save state
+- Show date
+- Advance date
+- Users menu
+- Works menu
+- Requests menu
 
-A classificação deve ser extensível para novos critérios.
+Save/load behavior:
+- Open: replaces the current state
+- Save: writes to the associated file
+- Ask the user before discarding unsaved changes
 
-Requisições
+---
 
-As regras para requisitar obras são verificadas por ordem (numeradas como regras do sistema):
+## Users Management Menu (bci.app.users)
+Includes:
+- Register user
+- Show user
+- Show all users
+- Show notifications
+- Pay fine
 
-Não pode requisitar a mesma obra duas vezes em simultâneo
+Interaction follows classes in package bci.app.users.
 
-Não pode estar suspenso
+---
 
-Não pode requisitar se não houver exemplares disponíveis
+## Works Management Menu
+Includes:
+- Show work
+- Show all works
+- Show works by creator
+- Adjust inventory
+- Search
 
-Limite de obras em simultâneo:
+Presentation formats vary depending on type (book or DVD).
 
-Normal: 3
+---
 
-Cumpridor: 5
+## Requests Management Menu
+Includes:
+- Request work (borrow)
+- Return work (deliver)
 
-Faltoso: 1
+Rules and exceptions follow domain definitions.
 
-Não pode requisitar obras de referência
+---
 
-Não pode requisitar obras com preço superior a 25€ (excepto cumpridores)
+## Initial Data File Formats
+Work formats:
+```
+DVD:title:director:price:category:IGACNumber:copies
+BOOK:title:author1,author2,...:price:category:ISBN:copies
+```
 
-Caso a regra 3 seja violada, o utente pode pedir notificação quando voltar a existir um exemplar disponível.
+User format:
+```
+USER:name:email
+```
 
-Prazos de entrega (em dias)
-Exemplares	Base	Cumpridor	Faltoso
-1 exemplar	3	8	2
-≤ 5 exemplares	8	15	2
-> 5 exemplares	15	30	2
-
-Multas: 5€/dia de atraso (fracções contam como dia).
-
-Prazos e regras devem ser facilmente extensíveis.
-
-Pesquisas
-
-O sistema deve permitir pesquisas por termo, abrangendo os campos relevantes de cada obra.
-A implementação deve permitir introduzir novos métodos de pesquisa com impacto mínimo.
-
-Alterações de Inventário
-
-O número de exemplares de uma obra pode ser ajustado por soma ou subtracção.
-
-Se o número de exemplares chegar a 0 → obra é removida do sistema
-
-A remoção de obras afecta a lista de criadores
-
-Gestão de Tempo
-
-A data do sistema é medida em dias, começando em 1
-
-Avançar a data implica actualizar situações de utentes e prazos
-
-Faz parte do estado persistente
-
-Notificações
-
-O sistema envia notificações quando:
-
-Uma obra é requisitada
-
-Uma obra indisponível volta a estar disponível
-
-Notas importantes:
-
-Cada notificação é mostrada apenas uma vez ao utente
-
-O interesse por disponibilidade é removido quando o utente consegue requisitar a obra
-
-O interesse por requisições é persistente enquanto válido
-
-Requisitos de Desenho
-
-A arquitectura deve obedecer ao princípio aberto-fechado.
-
-A aplicação deve permitir, com impacto mínimo:
-
-Novos tipos de obra
-
-Novas entidades notificáveis
-
-Novas regras de requisição
-
-Novos prazos
-
-Novas classificações de utentes
-
-Remover qualquer entidade
-
-Funcionalidade da Aplicação
-
-O sistema deve:
-
-Manter dados de utentes, obras e requisições
-
-Preservar o estado através de serialização
-
-Permitir remoção de qualquer entidade
-
-Carregar estado inicial a partir de ficheiro de texto (caso especificado pela propriedade Java import)
-
-Interacção com o Utilizador
-
-A interface é pré-implementada nas packages fornecidas (bci-app).
-Os comandos recebem dados via form e escrevem via display.
-
-As excepções de domínio não podem usar mensagens da interface
-
-A interface usa excepções como NoSuchUserException, NoSuchWorkException, etc.
-
-Todas as operações que falham não devem alterar o estado da aplicação (salvo indicação contrária)
-
-Menu Principal
-
-Inclui operações:
-
-Abrir ficheiro de estado
-
-Guardar estado
-
-Mostrar data
-
-Avançar data
-
-Menu de Utentes
-
-Menu de Obras
-
-Menu de Requisições
-
-Estas opções já estão implementadas na package bci.app.main.
-
-Salvaguarda
-
-Abrir: substitui o estado atual
-
-Guardar: grava no ficheiro associado
-
-Pergunta ao utilizador antes de descartar alterações não guardadas
-
-Menu de Gestão de Utentes
-
-Inclui:
-
-Registar utente
-
-Mostrar utente
-
-Mostrar todos os utentes
-
-Mostrar notificações
-
-Pagar multa
-
-Acesso e interacção com utilizador seguem classes da package bci.app.users.
-
-Menu de Gestão de Obras
-
-Inclui:
-
-Mostrar obra
-
-Mostrar todas as obras
-
-Mostrar obras de criador
-
-Alterar inventário
-
-Pesquisa
-
-Formatos de apresentação variam conforme o tipo (livro ou DVD).
-
-Menu de Gestão de Requisições
-
-Inclui:
-
-Requisitar obra
-
-Devolver obra
-
-Regras e excepções seguem as definições do domínio.
-
-Leitura Inicial de Dados em Ficheiro Texto
-
-Formato das obras:
-
-DVD:título:realizador:preço:categoria:númeroIGAC:exemplares
-BOOK:título:autor1,autor2,...:preço:categoria:ISBN:exemplares
-
-
-Formato dos utentes:
-
-USER:nome:email
+---
